@@ -18,12 +18,22 @@ function error_handler($number, $string, $file, $line)
 
 try{
 
-    if(file_exists($stalker_config_path)) {
-        $conf = parse_ini_file($stalker_config_path);
-        $test = $conf;
+    $conf = array();
+
+    $config_path = $stalker_path.'/server/config.ini';
+    $custom_path = $stalker_path.'/server/custom.ini';
+
+    if(file_exists($config_path)) {
+        $conf   = parse_ini_file($config_path);
     }else{
-        throw  new \Exception('File '.$stalker_config_path.' must be present');
+        throw  new \Exception('File '.$config_path.' must be present');
     }
+
+    if(file_exists($custom_path)){
+        $custom = parse_ini_file($custom_path);
+        $conf = array_merge($conf,$custom);
+    }
+    $conf = array_merge($conf,array('stalker_path'=>$stalker_path));
 
     $mysqli = new mysqli(isset($conf['mysql_host']) ? $conf['mysql_host']:'localhost' , $conf["mysql_user"], $conf["mysql_pass"], $conf["db_name"]);
     $mysqli->set_charset("utf8");

@@ -113,17 +113,17 @@ class DeviceApiController
             }
 
         }else{
-            $lang='en_GB.utf8';
+            $lang=$this->getSafe('default_locale','ru_RU.utf8');
         }
 
         $this->language  = $lang;
 
-        $path = '/var/www/stalker_portal/server/locale/'.substr($lang,0,2).'/LC_MESSAGES/stb.po';
+        $path = $this->getSafe('stalker_path','/var/www/stalker_portal/').'/server/locale/'.substr($lang,0,2).'/LC_MESSAGES/stb.po';
 
         try{
             PoTranslator::getInstance()->setPath($path);
         }catch (\Exception $e){
-            $path = '/var/www/stalker_portal/server/locale/en/LC_MESSAGES/stb.po';
+            $path = $this->getSafe('stalker_path','/var/www/stalker_portal/').'/server/locale/'.substr($this->getSafe('default_locale','en'),0,2).'/LC_MESSAGES/stb.po';
             PoTranslator::getInstance()->setPath($path);
         }
 
@@ -145,9 +145,7 @@ class DeviceApiController
 
             if($token!=null && $this->device->getAccessToken() == $token) $this->registered = true;
 
-
             if($this->device->getId()) $this->device->save();
-
         }
 
 
@@ -187,8 +185,6 @@ class DeviceApiController
      */
     public function authAction()
     {
-
-
         if(!$this->device->getId()){
 
             $this->registered = true;
@@ -212,8 +208,6 @@ class DeviceApiController
 
 
         if(!$this->device->getAccessToken()) throw  new DeviceApiRegistrationRequiredException('Need registration');
-
-
 
         $authResponse = new AuthResponse(
             $this->registered,

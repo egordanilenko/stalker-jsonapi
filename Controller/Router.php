@@ -3,7 +3,6 @@
 
 namespace Controller;
 
-
 use Exception\DeviceApiAuthenticationRequiredException;
 use Exception\DeviceApiException;
 use Exception\DeviceApiNotFoundException;
