@@ -35,11 +35,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="DeviceApiController.php" pinned="false" current-in-tab="false">
+      <file leaf-file-name="DeviceApiController.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Controller/DeviceApiController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="348">
-              <caret line="209" column="30" selection-start-line="209" selection-start-column="30" selection-end-line="209" selection-end-column="30" />
+            <state relative-caret-position="168">
+              <caret line="197" column="49" selection-start-line="197" selection-start-column="31" selection-end-line="197" selection-end-column="49" />
               <folding>
                 <element signature="e#31#83#0#PHP" expanded="true" />
                 <marker date="1473683514853" expanded="true" signature="3100:3152" ph="SELECT id FR... users" />
@@ -198,10 +198,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="JsonResponse.php" pinned="false" current-in-tab="true">
+      <file leaf-file-name="JsonResponse.php" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Response/JsonResponse.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="450">
+            <state relative-caret-position="326">
               <caret line="30" column="8" selection-start-line="30" selection-start-column="8" selection-end-line="30" selection-end-column="8" />
               <folding />
             </state>
@@ -351,6 +351,20 @@
               <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jsonapi" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jsonapi" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Controller" />
+              <option name="myItemType" value="com.jetbrains.php.projectView.PhpTreeStructureProvider$1" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
     </panes>
@@ -452,18 +466,18 @@
       <workItem from="1472825087812" duration="10612000" />
       <workItem from="1473156478080" duration="18744000" />
       <workItem from="1473665386124" duration="16000" />
-      <workItem from="1473666853610" duration="11888000" />
+      <workItem from="1473666853610" duration="11949000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="135547000" />
+    <option name="totallyTimeSpent" value="135608000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="24" width="1855" height="1056" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24959569" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24959569" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -867,43 +881,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Controller/DeviceApiController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="348">
-          <caret line="209" column="30" selection-start-line="209" selection-start-column="30" selection-end-line="209" selection-end-column="30" />
-          <folding>
-            <element signature="e#31#83#0#PHP" expanded="true" />
-            <marker date="1473683514853" expanded="true" signature="3100:3152" ph="SELECT id FR... users" />
-            <marker date="1473683514853" expanded="true" signature="3100:3200" ph="SELECT id FR... users" />
-            <marker date="1473683514853" expanded="true" signature="3864:4122" ph="/** * CORS p... " />
-            <marker date="1473683514853" expanded="true" signature="4276:4377" ph="/** * @link " />
-            <marker date="1473683514853" expanded="true" signature="4913:4989" ph="/** * @link " />
-            <marker date="1473683514853" expanded="true" signature="5492:5549" ph="SELECT id FR... tariff_plan" />
-            <marker date="1473683514853" expanded="true" signature="6197:6397" ph="/** * @link " />
-            <marker date="1473683514853" expanded="true" signature="7250:7284" ph="SELECT id FR... users" />
-            <marker date="1473683514853" expanded="true" signature="7250:7287" ph="SELECT id FR... users" />
-            <marker date="1473683514853" expanded="true" signature="7250:7298" ph="SELECT id FR... users" />
-            <marker date="1473683514853" expanded="true" signature="7250:7353" ph="SELECT id FR... users" />
-            <marker date="1473683514853" expanded="true" signature="7250:7363" ph="SELECT id FR... users" />
-            <marker date="1473683514853" expanded="true" signature="7250:7377" ph="SELECT id FR... users" />
-            <marker date="1473683514853" expanded="true" signature="11135:11166" ph="SELECT id FR... epg" />
-            <marker date="1473683514853" expanded="true" signature="11135:11199" ph="SELECT id FR... epg" />
-            <marker date="1473683514853" expanded="true" signature="11135:11202" ph="SELECT id FR... epg" />
-            <marker date="1473683514853" expanded="true" signature="11135:11203" ph="SELECT id FR... epg" />
-            <marker date="1473683514853" expanded="true" signature="11135:11247" ph="SELECT id FR... epg" />
-            <marker date="1473683514853" expanded="true" signature="11135:11250" ph="SELECT id FR... epg" />
-            <marker date="1473683514853" expanded="true" signature="11135:11251" ph="SELECT id FR... epg" />
-            <marker date="1473683514853" expanded="true" signature="11135:11281" ph="SELECT id FR... epg" />
-            <marker date="1473683514853" expanded="true" signature="11135:11282" ph="SELECT id FR... epg" />
-            <marker date="1473683514853" expanded="true" signature="13468:13500" ph="SELECT id FR... events" />
-            <marker date="1473683514853" expanded="true" signature="13468:13551" ph="SELECT id FR... events" />
-            <marker date="1473683514853" expanded="true" signature="13468:13552" ph="SELECT id FR... events" />
-            <marker date="1473683514853" expanded="true" signature="16277:16300" ph="SELECT id FR... tv_genre" />
-            <marker date="1473683514853" expanded="true" signature="17785:17803" ph="SELECT id FR... itv" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Model/Device.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-341">
@@ -1002,9 +979,46 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Response/JsonResponse.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
+        <state relative-caret-position="326">
           <caret line="30" column="8" selection-start-line="30" selection-start-column="8" selection-end-line="30" selection-end-column="8" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Controller/DeviceApiController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="168">
+          <caret line="197" column="49" selection-start-line="197" selection-start-column="31" selection-end-line="197" selection-end-column="49" />
+          <folding>
+            <element signature="e#31#83#0#PHP" expanded="true" />
+            <marker date="1473683514853" expanded="true" signature="3100:3152" ph="SELECT id FR... users" />
+            <marker date="1473683514853" expanded="true" signature="3100:3200" ph="SELECT id FR... users" />
+            <marker date="1473683514853" expanded="true" signature="3864:4122" ph="/** * CORS p... " />
+            <marker date="1473683514853" expanded="true" signature="4276:4377" ph="/** * @link " />
+            <marker date="1473683514853" expanded="true" signature="4913:4989" ph="/** * @link " />
+            <marker date="1473683514853" expanded="true" signature="5492:5549" ph="SELECT id FR... tariff_plan" />
+            <marker date="1473683514853" expanded="true" signature="6197:6397" ph="/** * @link " />
+            <marker date="1473683514853" expanded="true" signature="7250:7284" ph="SELECT id FR... users" />
+            <marker date="1473683514853" expanded="true" signature="7250:7287" ph="SELECT id FR... users" />
+            <marker date="1473683514853" expanded="true" signature="7250:7298" ph="SELECT id FR... users" />
+            <marker date="1473683514853" expanded="true" signature="7250:7353" ph="SELECT id FR... users" />
+            <marker date="1473683514853" expanded="true" signature="7250:7363" ph="SELECT id FR... users" />
+            <marker date="1473683514853" expanded="true" signature="7250:7377" ph="SELECT id FR... users" />
+            <marker date="1473683514853" expanded="true" signature="11135:11166" ph="SELECT id FR... epg" />
+            <marker date="1473683514853" expanded="true" signature="11135:11199" ph="SELECT id FR... epg" />
+            <marker date="1473683514853" expanded="true" signature="11135:11202" ph="SELECT id FR... epg" />
+            <marker date="1473683514853" expanded="true" signature="11135:11203" ph="SELECT id FR... epg" />
+            <marker date="1473683514853" expanded="true" signature="11135:11247" ph="SELECT id FR... epg" />
+            <marker date="1473683514853" expanded="true" signature="11135:11250" ph="SELECT id FR... epg" />
+            <marker date="1473683514853" expanded="true" signature="11135:11251" ph="SELECT id FR... epg" />
+            <marker date="1473683514853" expanded="true" signature="11135:11281" ph="SELECT id FR... epg" />
+            <marker date="1473683514853" expanded="true" signature="11135:11282" ph="SELECT id FR... epg" />
+            <marker date="1473683514853" expanded="true" signature="13468:13500" ph="SELECT id FR... events" />
+            <marker date="1473683514853" expanded="true" signature="13468:13551" ph="SELECT id FR... events" />
+            <marker date="1473683514853" expanded="true" signature="13468:13552" ph="SELECT id FR... events" />
+            <marker date="1473683514853" expanded="true" signature="16277:16300" ph="SELECT id FR... tv_genre" />
+            <marker date="1473683514853" expanded="true" signature="17785:17803" ph="SELECT id FR... itv" />
+          </folding>
         </state>
       </provider>
     </entry>
