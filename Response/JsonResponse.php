@@ -9,7 +9,7 @@ class JsonResponse
 {
     private $content;
     private $code;
-    private $headers;
+    private $headers=array();
 
     /**
      * JsonResponse constructor.
@@ -25,12 +25,15 @@ class JsonResponse
     }
 
     public function renderJson(){
-        header('Content-Type: application/json');
         http_response_code($this->code);
+        header('Content-Type: application/json');
+
         foreach ($this->headers as $id => $header){
             $header  =$id.': '.$header;
             header($header);
         }
+
         echo json_encode($this->content);
+
     }
 }

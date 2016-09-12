@@ -31,7 +31,7 @@ class Device extends ActiveRecord
     /**
      * @var int
      */
-    protected $tariff_plan_id;
+    protected $tariff_plan_id=null;
 
     /**
      * @var string
@@ -79,7 +79,7 @@ class Device extends ActiveRecord
      * @var bool
      * 1 - disabled, 0 -enabled;
      */
-    protected $status;
+    protected $status=0;
 
 
     protected $_table='users';
@@ -129,6 +129,10 @@ class Device extends ActiveRecord
     public function getTariffPlanId()
     {
         return (int)$this->tariff_plan_id;
+    }
+
+    public function setTariffPlanId($tariff_id){
+        $this->tariff_plan_id = $tariff_id;
     }
 
     /**
@@ -243,8 +247,16 @@ class Device extends ActiveRecord
 
         if(!$this->id){
             $sql = '
-              INSERT INTO '.$this->_table.'(mac,ip,locale, image_version, last_active, stb_type) 
-              VALUES (\''.$this->mac.'\', \''.$this->ip.'\', \''.$this->locale.'\', \''.$this->image_version.'\',\''.$this->last_active.'\',\''.$this->stb_type.'\')';
+              INSERT INTO '.$this->_table.'(mac,ip,locale, image_version, last_active, stb_type, access_token) 
+              VALUES (
+              \''.$this->mac.'\', 
+              \''.$this->ip.'\', 
+              \''.$this->locale.'\', 
+              \''.$this->image_version.'\',
+              \''.$this->last_active.'\',
+              \''.$this->stb_type.'\',
+              \''.$this->access_token.'\'
+              )';
             $result=Database::getInstance()->getMysqli()->query($sql);
             if($result){
                 $this->id=Database::getInstance()->getMysqli()->insert_id;
@@ -256,16 +268,19 @@ class Device extends ActiveRecord
             $sql = 'UPDATE '.$this->_table.'  
             SET 
             mac=\''.$this->mac.'\', 
+            status='.$this->status.',
             ip=\''.$this->ip.'\', 
             locale=\''.$this->locale.'\', 
             image_version=\''.$this->image_version.'\', 
             last_active=\''.$this->last_active.'\',
             stb_type=\''.$this->stb_type.'\',
-            access_token=\''.$this->access_token.'\'
+            access_token=\''.$this->access_token.'\',
+            tariff_plan_id='.$this->tariff_plan_id.'
             WHERE id='.$this->id;
+
             $result=Database::getInstance()->getMysqli()->query($sql);
             if(!$result){
-                throw new \Exception('Error: '.Database::getInstance()->getMysqli()->error,Database::getInstance()->getMysqli()->errno);
+                throw new \Exception('Error on query '.str_replace('\n', '<br>',$sql).' '.Database::getInstance()->getMysqli()->error,Database::getInstance()->getMysqli()->errno);
             }
         }
     }
@@ -325,6 +340,13 @@ class Device extends ActiveRecord
 
     public function isEnabled(){
         return !(bool) $this->status;
+    }
+
+    /**
+     * @param $status bool
+     */
+    public function setStatus($status){
+        $this->status = (int)$status;
     }
 
     /**

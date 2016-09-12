@@ -78,7 +78,7 @@ class Router
         try{
             if(!method_exists($this->deviceApiController,$this->method)) throw  new DeviceApiNotFoundException('Command not found',$this->method);
 
-            if($this->deviceApiController->isRegistred() == false && in_array($this->method,$this->deviceApiController->getAnonymousAction())==false) throw  new DeviceApiAuthenticationRequiredException('Need auth');
+            if($this->deviceApiController->isRegistered() == false && in_array($this->method,$this->deviceApiController->getAnonymousAction())==false) throw  new DeviceApiAuthenticationRequiredException('Need auth');
 
             return $this->deviceApiController->{$this->method}();
         }catch (DeviceApiException $e){

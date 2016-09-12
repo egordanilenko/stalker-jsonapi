@@ -39,10 +39,12 @@ class DeviceApiController
     const SESSION_TYPE='token';
     const API_VERSION = 1;
 
-
+    /**
+     * @var string
+     */
     private $language;
 
-    private $registred = false;
+    private $registered = false;
 
     /**
      * @var Device
@@ -53,16 +55,34 @@ class DeviceApiController
      */
     private $request;
 
+    /**
+     * @var integer
+     */
     private $clientIp;
 
+    /**
+     * @var array
+     */
     private static $anonymousAction = array('serverInfoAction','registerAction','authAction');
 
+    /**
+     * @var Channel[]
+     */
     private $channels = array();
 
+    /**
+     * @var FavoriteGroup[]
+     */
     private $favorites = array();
 
+    /**
+     * @var AgeGroup[]
+     */
     private $ageGroups = array();
 
+    /**
+     * @var array
+     */
     private $config = array();
 
     /**
@@ -121,17 +141,17 @@ class DeviceApiController
             $this->device->setStbType($request->getHeaderParam('device-type'));
             $this->device->setLocale($lang);
             $this->device->setIp($this->clientIp);
+            $this->device->setMac($mac);
 
-            if(!$this->device->getId()) $this->device->setMac($mac);
-            if($token!=null && $this->device->getAccessToken() == $token) $this->registred = true;
+            if($token!=null && $this->device->getAccessToken() == $token) $this->registered = true;
+
+
             if($this->device->getId()) $this->device->save();
 
         }
 
 
     }
-
-
 
     /**
      * CORS preflight request (request with OPTIONS method to target url, then original request), must return valid response with correct headers
@@ -162,19 +182,41 @@ class DeviceApiController
         return self::generateResponse(new RequestResponse('server_info',200,$serverInfoResponse));
     }
 
-
-
-
     /**
      * @link http://wiki.tvip.ru/private/json_api#authentication
      */
     public function authAction()
     {
 
+
+        if(!$this->device->getId()){
+
+            $this->registered = true;
+
+            $this->device->save();
+            $this->device->generateUniqueToken();
+            if($this->getSafe('default_stb_status',0)==0){
+                $this->device->setStatus(false); // inversed status, true = off, false = on
+            }else{
+                $this->device->setStatus(true);
+            }
+
+            $query = Database::getInstance()->getMysqli()->query('SELECT id FROM tariff_plan WHERE user_default=1 LIMIT 0,1');
+            if($query->num_rows>0){
+                $result = $query->fetch_assoc();
+                $this->device->setTariffPlanId($result['id']);
+            }
+
+            $this->device->save();
+        }
+
+
         if(!$this->device->getAccessToken()) throw  new DeviceApiRegistrationRequiredException('Need registration');
 
+
+
         $authResponse = new AuthResponse(
-            $this->registred,
+            $this->registered,
             self::REGISTER_TYPE,
             self::SESSION_TYPE,
             $this->device->getAccessToken()
@@ -202,7 +244,7 @@ class DeviceApiController
             $password = $json->password;
 
             if($this->device->getId() && $this->device->getLogin() == $login && $this->device->checkPassword($password)){
-                $this->registred=true;
+                $this->registered=true;
                 $this->device->generateUniqueToken();
                 $this->device->save();
                 $registerResponse->token=$this->device->getAccessToken();
@@ -240,7 +282,7 @@ class DeviceApiController
      */
     public function unregisterAction()
     {
-        if(!$this->registred) throw new DeviceApiRegistrationRequiredException('Registration requied');
+        if(!$this->registered) throw new DeviceApiRegistrationRequiredException('Registration requied');
         $this->device->setMac(null);
         $this->device->setAccessToken(null);
         $this->device->save();
@@ -253,7 +295,7 @@ class DeviceApiController
      * @throws DeviceApiRegistrationRequiredException
      */
     public function userInfoAction(){
-        if(!$this->registred) throw new DeviceApiRegistrationRequiredException('Registration required');
+        if(!$this->registered) throw new DeviceApiRegistrationRequiredException('Registration required');
         $userInfoResponse = new UserInfoResponse(
             $this->device->getFullname(),
             $this->device->getAccount(),
@@ -505,7 +547,7 @@ class DeviceApiController
 
     public function getChannelsIds(){
 
-
+        //если включены тарифные планы и выключена подписка тв на тарифных планах
         if ($this->getSafe('enable_tariff_plans', false) && !$this->getSafe('enable_tv_subscription_for_tariff_plans', false)){
 
             $subscription = $this->device->getServicesByType('tv');
@@ -514,7 +556,13 @@ class DeviceApiController
             }
             $channel_ids = $subscription;
         }else{
-            $channel_ids = array_unique(array_merge($this->device->getSubscriptionChannelsIds(), $this->device->getBonusChannelsIds(), $this->device->getBaseChannelsIds()));
+            $channel_ids = array_unique(
+                array_merge(
+                    $this->device->getSubscriptionChannelsIds(),
+                    $this->device->getBonusChannelsIds(),
+                    $this->device->getBaseChannelsIds()
+                )
+            );
         }
 
 
@@ -532,8 +580,8 @@ class DeviceApiController
 
 
 
-    public function isRegistred(){
-        return $this->registred;
+    public function isRegistered(){
+        return $this->registered;
     }
 
     /**
