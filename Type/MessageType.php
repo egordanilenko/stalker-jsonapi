@@ -1,0 +1,46 @@
+<?php
+
+namespace Type;
+
+
+use Model\Command;
+
+class MessageType
+{
+
+    public static  $mapping = array(
+        'update_epg' => 'refresh_channel_list',
+        'cut_off'    => 'refresh_channel_list',
+        'cut_on'     => 'refresh_channel_list',
+        'reboot'     => 'restart'
+
+    );
+
+    /**
+     * @var int
+     */
+    public $id;
+
+    /**
+     * @var string
+     */
+    public $command;
+
+    /**
+     * @var int
+     */
+    public $ttl;
+
+    /**
+     * @var \stdClass
+     */
+    public $args;
+
+    public function __construct(Command $command)
+    {
+        if(!array_key_exists($command->getEvent(),self::$mapping)) throw new \Exception("Mapping for ".$command->getEvent()." not found");
+        $this->id = $command->getId();
+        $this->command = self::$mapping[$command->getEvent()];
+        $this->args = (object)array();
+    }
+}
