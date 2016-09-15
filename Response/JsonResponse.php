@@ -36,4 +36,12 @@ class JsonResponse
         echo json_encode($this->content);
 
     }
+
+    public function toLoggerMessage(){
+        return array(
+            'headers' => $this->headers,
+            'content' => $this->content,
+            'code'    => $this->code
+        );
+    }
 }

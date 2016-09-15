@@ -9,8 +9,8 @@ use Exception\DeviceApiNotFoundException;
 use Model\Request;
 use Response\ErrorResponse;
 use Response\JsonResponse;
-use Response\RequestResponse;
 use Utils\Inflector;
+use Utils\Logger;
 
 class Router
 {
@@ -81,8 +81,8 @@ class Router
 
             return $this->deviceApiController->{$this->method}();
         }catch (DeviceApiException $e){
-            $exceptionResponse = new ErrorResponse();
-            $requestResponse = new RequestResponse($this->command,$e->getCode(),$exceptionResponse,$e->getMessage());
+            Logger::log($e);
+            $requestResponse = new ErrorResponse($e->getCode(),$e->getMessage());
             return new JsonResponse($requestResponse,$e->getCode());
         }
     }

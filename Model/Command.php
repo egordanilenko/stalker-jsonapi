@@ -4,8 +4,6 @@
 namespace Model;
 
 
-use Utils\Database;
-
 class Command extends ActiveRecord
 {
     protected $_table='events';
@@ -94,11 +92,4 @@ class Command extends ActiveRecord
     {
         $this->ended = $ended;
     }
-
-    public function save()
-    {
-        if(!$this->id) throw  new \Exception('No new events allowed from client');
-        Database::getInstance()->getMysqli()->query('UPDATE '.$this->_table.' SET ended='.(int)$this->ended.', sended='.(int)$this->sended.' WHERE id ='.$this->id);
-    }
-
 }

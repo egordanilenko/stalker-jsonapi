@@ -2,31 +2,33 @@
 use Model\Request;
 use Controller\Router;
 use Utils\Database;
+use Utils\Logger;
+use Response\ErrorResponse;
 use Response\JsonResponse;
 
 set_error_handler('error_handler');
 
-include_once ('autoload.php');
-include_once ('config.php');
-
 
 function error_handler($number, $string, $file, $line)
 {
-    throw  new \Exception("Error on ".$line.' in '.$file.': '.$string,$number);
+    throw  new \Exception("Error on ".$line.' in '.$file.': '.$string, $number);
 }
 
 
 try{
 
-    $conf = array();
+    include_once ('autoload.php');
+    include_once ('config.php');
 
+    $conf = array();
+    if(!file_exists($stalker_path)) throw  new Exception("Work directory of stalker portal is not exist",500);
     $config_path = $stalker_path.'/server/config.ini';
     $custom_path = $stalker_path.'/server/custom.ini';
 
     if(file_exists($config_path)) {
         $conf   = parse_ini_file($config_path);
     }else{
-        throw  new \Exception('File '.$config_path.' must be present');
+        throw  new \Exception('File '.$config_path.' must be present', 500);
     }
 
     if(file_exists($custom_path)){
@@ -43,13 +45,18 @@ try{
     $path = substr($_SERVER['REQUEST_URI'], strlen($_SERVER['BASE']));
     $request = new Request($_GET,$_POST,getallheaders(),file_get_contents('php://input'),$path);
 
-    if (isset($stalker_host)) $conf = array_merge($conf,array('stalker_host'=>$stalker_host));
+    if (isset($stalker_host)) $conf = array_merge($conf,array('stalker_host'=>$stalker_host,'debug'=>true));
 
     $router = new Router($request,$conf);
     $jsonResponse = $router->getResponse();
 
 }catch (Exception $e){
-    $jsonResponse = new JsonResponse($e->getMessage(),$e->getCode());
+
+    Logger::log($e);
+    $jsonResponse = new JsonResponse(new ErrorResponse($e->getCode(),$e->getMessage()), $e->getCode());
 }
 
 $jsonResponse->renderJson();
+//
+//$log = array('request'=>$request->toLoggerMessage(), 'response'=>$jsonResponse->toLoggerMessage());
+//Logger::write(json_encode($log,JSON_PRETTY_PRINT));

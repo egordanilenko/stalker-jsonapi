@@ -84,7 +84,15 @@ class Request
     }
 
 
+    public function toLoggerMessage(){
+        return array(
+            'path'    => $this->path,
+            'headers' => $this->headers,
+            'content' => $this->content,
+            'args'    => array_merge($this->get,$this->post)
 
+        );
+    }
 
 
 }

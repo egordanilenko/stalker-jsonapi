@@ -5,6 +5,7 @@ namespace Model;
 
 
 use Utils\Database;
+use Utils\QueryBuilder;
 
 class Device extends ActiveRecord
 {
@@ -22,11 +23,6 @@ class Device extends ActiveRecord
      * @var string
      */
     protected $access_token;
-
-    /**
-     * @var int
-     */
-    private $token_expire = 86400;
 
     /**
      * @var int
@@ -61,6 +57,11 @@ class Device extends ActiveRecord
     /**
      * @var string
      */
+    protected $keep_alive;
+
+    /**
+     * @var string
+     */
     protected $stb_type;
 
     /**
@@ -83,6 +84,7 @@ class Device extends ActiveRecord
 
 
     protected $_table='users';
+
     /**
      * @return mixed
      */
@@ -202,6 +204,22 @@ class Device extends ActiveRecord
     /**
      * @return string
      */
+    public function getKeepAlive()
+    {
+        return new \DateTime($this->keep_alive);
+    }
+
+    public function setKeepAlive(\DateTime $keep_alive)
+    {
+        $this->keep_alive = $keep_alive->format('c');
+    }
+
+
+
+
+    /**
+     * @return string
+     */
     public function getStbType()
     {
         return $this->stb_type;
@@ -241,60 +259,19 @@ class Device extends ActiveRecord
         return $check == $this->password ? true:false;
     }
 
-
-    public function save()
-    {
-
-        if(!$this->id){
-            $sql = '
-              INSERT INTO '.$this->_table.'(mac,ip,locale, image_version, last_active, stb_type, access_token) 
-              VALUES (
-              \''.$this->mac.'\', 
-              \''.$this->ip.'\', 
-              \''.$this->locale.'\', 
-              \''.$this->image_version.'\',
-              \''.$this->last_active.'\',
-              \''.$this->stb_type.'\',
-              \''.$this->access_token.'\'
-              )';
-            $result=Database::getInstance()->getMysqli()->query($sql);
-            if($result){
-                $this->id=Database::getInstance()->getMysqli()->insert_id;
-            }else{
-                throw new \Exception('Error: '.Database::getInstance()->getMysqli()->error.' ('.$sql.')',Database::getInstance()->getMysqli()->errno);
-            }
-
-        }else{
-            $sql = 'UPDATE '.$this->_table.'  
-            SET 
-            mac=\''.$this->mac.'\', 
-            status='.$this->status.',
-            ip=\''.$this->ip.'\', 
-            locale=\''.$this->locale.'\', 
-            image_version=\''.$this->image_version.'\', 
-            last_active=\''.$this->last_active.'\',
-            stb_type=\''.$this->stb_type.'\',
-            access_token=\''.$this->access_token.'\',
-            tariff_plan_id='.$this->tariff_plan_id.'
-            WHERE id='.$this->id;
-
-            $result=Database::getInstance()->getMysqli()->query($sql);
-            if(!$result){
-                throw new \Exception('Error on query '.str_replace('\n', '<br>',$sql).' '.Database::getInstance()->getMysqli()->error,Database::getInstance()->getMysqli()->errno);
-            }
-        }
-    }
-
     /**
      * @return string
      * @throws \Exception
      */
     public function generateUniqueToken(){
 
+        if(!$this->id){
+            throw  new \Exception('Try to generate unique token to device without id');
+        }
         $token = $this->id.'.'.md5(microtime(1));
 
 
-        $query = Database::getInstance()->getMysqli()->query('SELECT * FROM access_tokens WHERE uid='.$this->id.' LIMIT 0,1');
+        $query = QueryBuilder::query('SELECT * FROM access_tokens WHERE uid='.$this->id.' LIMIT 0,1');
         $token_record = $query->fetch_assoc();
 
         $data = array(
@@ -303,12 +280,12 @@ class Device extends ActiveRecord
             'refresh_token' => md5($token.''.uniqid()),
             'secret_key'    => md5($token.microtime(1)),
             'started' => 'NOW()',
-            'expires' => date('Y-m-d H:i:s', time() + $this->token_expire)
+            'expires' => date('Y-m-d H:i:s', time() + 3600)
         );
 
         if (empty($token_record)){
 
-            $query = Database::getInstance()->getMysqli()->query(
+            $query = QueryBuilder::query(
                 '
                  INSERT INTO access_tokens (uid,token,refresh_token,secret_key,started,expires) 
                  VALUES ('.$data['uid'].',\''.$data['token'].'\',\''.$data['refresh_token'].'\',\''.$data['secret_key'].'\',\''.$data['started'].'\',\''.$data['expires'].'\')
@@ -316,7 +293,7 @@ class Device extends ActiveRecord
 
         }else{
 
-            $query = Database::getInstance()->getMysqli()->query('
+            $query = QueryBuilder::query('
                  UPDATE access_tokens SET token=\''.$data['token'].'\', refresh_token=\''.$data['refresh_token'].'\', secret_key=\''.$data['secret_key'].'\', started=\''.$data['started'].'\',expires=\''.$data['expires'].'\'
                  WHERE uid='.$this->id
             );
@@ -368,7 +345,7 @@ class Device extends ActiveRecord
             WHERE u.id=
             '.$this->id;
 
-            $result = Database::getInstance()->getMysqli()->query($sql);
+            $result = QueryBuilder::query($sql);
 
             while ($r = $result->fetch_assoc()){
                 array_push($channels,new Channel($r['id']));
@@ -389,7 +366,7 @@ class Device extends ActiveRecord
     public function getBaseChannelsIds(){
 
         $array = array();
-        $query = Database::getInstance()->getMysqli()->query('SELECT id FROM itv WHERE base_ch=1');
+        $query = QueryBuilder::query('SELECT id FROM itv WHERE base_ch=1');
 
         while($row = $query->fetch_assoc()){
             array_push($array,$row['id']);
@@ -405,7 +382,7 @@ class Device extends ActiveRecord
      */
     public function getBonusChannelsIds(){
 
-        $query = Database::getInstance()->getMysqli()->query('SELECT bonus_ch FROM itv_subscription WHERE uid='.$this->id);
+        $query = QueryBuilder::query('SELECT bonus_ch FROM itv_subscription WHERE uid='.$this->id);
         if($query->num_rows==0) return array();
         $bonus_ch = $query->fetch_assoc();
         $bonus_ch_arr = unserialize($this->base64_decode($bonus_ch['bonus_ch']));
@@ -425,11 +402,11 @@ class Device extends ActiveRecord
     public function getSubscriptionChannelsIds(){
 
 
-        $query = Database::getInstance()->getMysqli()->query('SELECT * FROM moderators WHERE mac=\''.$this->mac.'\' AND status=1 LIMIT 0,1');
+        $query = QueryBuilder::query('SELECT * FROM moderators WHERE mac=\''.$this->mac.'\' AND status=1 LIMIT 0,1');
 
         if($query->num_rows==0){
             $return = array();
-            $query = Database::getInstance()->getMysqli()->query('SELECT id FROM itv WHERE base_ch=0');
+            $query = QueryBuilder::query('SELECT id FROM itv WHERE base_ch=0');
             while($row=$query->fetch_assoc()){
                 array_push($return,$row['id']);
             }
@@ -437,7 +414,7 @@ class Device extends ActiveRecord
             return $return;
         }
 
-        $query = Database::getInstance()->getMysqli()->query('SELECT sub_ch FROM itv_subscription WHERE uid='.$this->id.' LIMIT 0,1');
+        $query = QueryBuilder::query('SELECT sub_ch FROM itv_subscription WHERE uid='.$this->id.' LIMIT 0,1');
 
         if($query->num_rows==0) return array();
 
@@ -454,30 +431,24 @@ class Device extends ActiveRecord
     }
 
 
-    /**
-     * @param string $type
-     * @return array|null|string
-     *
-     * !!! this code copypasted from stalker sources and adopted to database queries !!!
-     */
-    public function getServicesByType($type = 'tv'){
+    public function getServicesByType(){
 
         if(!$this->tariff_plan_id) return array();
 
-        $query = Database::getInstance()->getMysqli()->query('SELECT * FROM tariff_plan WHERE id='.$this->tariff_plan_id.' LIMIT 0,1');
+        $query = QueryBuilder::query('SELECT * FROM tariff_plan WHERE id='.$this->tariff_plan_id.' LIMIT 0,1');
         if($query->num_rows==0) return null;
 
         $plan = $query->fetch_assoc();
 
         $packages_ids = array();
-        $query = Database::getInstance()->getMysqli()->query('SELECT package_id as id FROM package_in_plan WHERE plan_id='.$plan['id'].' AND optional=0');
+        $query = QueryBuilder::query('SELECT package_id as id FROM package_in_plan WHERE plan_id='.$plan['id'].' AND optional=0');
         while($row = $query->fetch_assoc()){
             array_push($packages_ids,$row['id']);
         }
 
         $available_packages_ids = array();
 
-        $query = Database::getInstance()->getMysqli()->query('SELECT package_id as id FROM package_in_plan WHERE plan_id='.$plan['id']);
+        $query = QueryBuilder::query('SELECT package_id as id FROM package_in_plan WHERE plan_id='.$plan['id']);
 
         while($row = $query->fetch_assoc()){
             array_push($available_packages_ids,$row['id']);
@@ -485,7 +456,7 @@ class Device extends ActiveRecord
 
         $subscribed_packages_ids=array();
 
-        $query = Database::getInstance()->getMysqli()->query('SELECT package_id FROM user_package_subscription WHERE user_id='.$this->id);
+        $query = QueryBuilder::query('SELECT package_id FROM user_package_subscription WHERE user_id='.$this->id);
 
         while($row = $query->fetch_assoc()){
             array_push($subscribed_packages_ids,$row['package_id']);
@@ -508,7 +479,7 @@ class Device extends ActiveRecord
         $packages = array();
 
         $sql = 'SELECT * FROM services_package WHERE type=\'tv\' AND id IN ('.implode(',',$packages_ids).')';
-        $query = Database::getInstance()->getMysqli()->query($sql);
+        $query = QueryBuilder::query($sql);
 
         while($row = $query->fetch_assoc()){
             array_push($packages,$row);
@@ -532,7 +503,7 @@ class Device extends ActiveRecord
         foreach ($packages as $package){
 
             $ids = array();
-            $query = Database::getInstance()->getMysqli()->query('SELECT service_id FROM service_in_package WHERE package_id='.$package['id']);
+            $query = QueryBuilder::query('SELECT service_id FROM service_in_package WHERE package_id='.$package['id']);
             while($row = $query->fetch_assoc()){
                 array_push($ids,$row['service_id']);
             }

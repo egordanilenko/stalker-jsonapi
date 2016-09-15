@@ -29,8 +29,8 @@ use Response\UnregisterResponse;
 use Response\UserInfoResponse;
 use Type\PollType;
 use Type\ShortEpgType;
-use Utils\Database;
 use Utils\PoTranslator;
+use Utils\QueryBuilder;
 
 
 class DeviceApiController
@@ -63,7 +63,7 @@ class DeviceApiController
     /**
      * @var array
      */
-    private static $anonymousAction = array('serverInfoAction','registerAction','authAction');
+    private static $anonymousAction = array('serverInfoAction','postRegisterAction','authAction','shortEpgAction');
 
     /**
      * @var Channel[]
@@ -85,16 +85,18 @@ class DeviceApiController
      */
     private $config = array();
 
-    /**
-     * DeviceApiController constructor.
-     * @param Request $request
-     * @param array $config
-     */
+    private $authUrl = null;
+
+    private $debug=false;
+
+
     public function __construct(Request $request, array $config)
     {
 
         $this->config = $config;
         $this->request = $request;
+        $this->authUrl = $this->getSafe('auth_url',null);
+        $this->debug = $this->getSafe('debug',false);
 
         //virtual Age Group
         array_push($this->ageGroups, new AgeGroup(0,18,'18+'));
@@ -131,12 +133,12 @@ class DeviceApiController
 
         if($mac){
 
-            $query = Database::getInstance()->getMysqli()->query("SELECT id FROM users WHERE mac LIKE '$mac' LIMIT 0,1");
+            $query = QueryBuilder::query("SELECT id FROM users WHERE mac LIKE '$mac' LIMIT 0,1");
             $search = $query->fetch_object();
 
             $id = is_object($search) ? (int)$search->id:null;
             $this->device = new Device($id);
-            $this->device->setLastActive(new \DateTime());
+            $this->device->setKeepAlive(new \DateTime());
             $this->device->setImageVersion($request->getHeaderParam('device-firmware'));
             $this->device->setStbType($request->getHeaderParam('device-type'));
             $this->device->setLocale($lang);
@@ -145,7 +147,10 @@ class DeviceApiController
 
             if($token!=null && $this->device->getAccessToken() == $token) $this->registered = true;
 
+
             if($this->device->getId()) $this->device->save();
+        }else{
+            throw  new DeviceApiWrongSyntaxException('Mac address not present');
         }
 
 
@@ -167,14 +172,14 @@ class DeviceApiController
     public function serverInfoAction()
     {
         $serverInfoResponse = new ServerInfoResponse(
-            self::API_VERSION,
-            '', //TODO: fix it: Provider name via config or fetch from databse
-            time(),
-            true,
-            60,//$this->coreService->getConfig()->get('channel_list_update_interval'),
+            self::API_VERSION, //protocol version
+            '', // Stalker not provide ISP name
+            time(), //server time
+            true, //auth enabled
+            60,//channel list update interval $this->coreService->getConfig()->get('channel_list_update_interval'),
             $this->clientIp,
             $this->getPoll(),
-            array()
+            array() //cas types
         );
 
         return self::generateResponse(new RequestResponse('server_info',200,$serverInfoResponse));
@@ -185,7 +190,7 @@ class DeviceApiController
      */
     public function authAction()
     {
-        if(!$this->device->getId()){
+        if(!$this->device->getId() && !$this->authUrl){
 
             $this->registered = true;
 
@@ -197,12 +202,11 @@ class DeviceApiController
                 $this->device->setStatus(true);
             }
 
-            $query = Database::getInstance()->getMysqli()->query('SELECT id FROM tariff_plan WHERE user_default=1 LIMIT 0,1');
+            $query = QueryBuilder::query('SELECT id FROM tariff_plan WHERE user_default=1 LIMIT 0,1');
             if($query->num_rows>0){
                 $result = $query->fetch_assoc();
                 $this->device->setTariffPlanId($result['id']);
             }
-
             $this->device->save();
         }
 
@@ -217,6 +221,7 @@ class DeviceApiController
         );
         $code = 200;
 
+
         return self::generateResponse(new RequestResponse('auth',$code,$authResponse));
     }
 
@@ -226,7 +231,7 @@ class DeviceApiController
      * @throws DeviceApiIncorrectCredintialsExcption
      * @throws DeviceApiWrongSyntaxException
      */
-    public function registerAction()
+    public function postRegisterAction()
     {
 
         $registerResponse = new RegisterResponse(null);
@@ -239,13 +244,16 @@ class DeviceApiController
 
             if($this->device->getId() && $this->device->getLogin() == $login && $this->device->checkPassword($password)){
                 $this->registered=true;
+
                 $this->device->generateUniqueToken();
                 $this->device->save();
+
                 $registerResponse->token=$this->device->getAccessToken();
             }else{
                 $sql = 'SELECT id FROM users WHERE login = \''.$login.'\' AND password = MD5(CONCAT(\''.md5($password).'\',id)) AND mac =\'\' LIMIT 0,1';
-                $query = Database::getInstance()->getMysqli()->query($sql);
+                $query = QueryBuilder::query($sql);
                 if($query->num_rows==1){
+                    $this->registered=true;
                     $result = $query->fetch_assoc();
                     $mac = $this->device->getMac();
                     if($this->device->getId()){
@@ -256,6 +264,7 @@ class DeviceApiController
                     $this->device->setMac($mac);
                     $this->device->save();
                     $this->device->generateUniqueToken();
+                    $this->device->save();
                     $registerResponse->token = $this->device->getAccessToken();
                 } else{
                     throw new DeviceApiIncorrectCredintialsExcption('Login or password is incorrect');
@@ -311,7 +320,7 @@ class DeviceApiController
         $baseLogoUrl = isset($this->config['stalker_host']) ? 'http://'.$this->config['stalker_host']: 'http://'.$_SERVER['SERVER_NAME'];
         $baseLogoUrl = $baseLogoUrl.'/stalker_portal/misc/logos/240/';
         $channelsResponse = new ChannelsResponse(
-            0,//channel version
+            time(),//channel version, this is temporary value, channels will refresh every channel request interval
             0,//epg version
             $this->getChannels(),
             $this->ageGroups,
@@ -350,7 +359,7 @@ class DeviceApiController
         $endDateTime->setTime(23,59,59);
 
         $sql = 'SELECT id FROM epg WHERE ch_id='.$channel->getId().' AND time >= \''.$startDateTime->format('c').'\' AND time <= \''.$endDateTime->format('c').'\'';
-        $result = Database::getInstance()->getMysqli()->query($sql);
+        $result = QueryBuilder::query($sql);
         $events = array();
         while($row = $result->fetch_assoc()){
             array_push($events, new EpgItem($row['id']));
@@ -373,25 +382,18 @@ class DeviceApiController
     /**
      * @link http://wiki.tvip.ru/private/json_api#short_epg_download
      * @return JsonResponse
-     * TODO: fixit
      */
     public function shortEpgAction(){
         $channels = array();
-//        foreach($this->getChannels() as $channel){
-//            array_push($channels,new ShortEpgType($channel));
-//        }
+        foreach($this->getChannels() as $channel){
+            array_push($channels,new ShortEpgType($channel));
+        }
         $response = new ShortEpgResponse(1,$channels,array());
         return self::generateResponse(new RequestResponse('short_epg',200,$response));
 
     }
 
-    /**
-     * @link http://wiki.tvip.ru/private/json_api#short_epg_download
-     * @param Request $request
-     * @return JsonResponse
-     * @throws DeviceApiNotFoundException
-     * TODO: fixit
-     */
+
     public function channelShortEpgAction(){
         $channelId=$this->request->getGetParam('channel');
         /**
@@ -403,7 +405,7 @@ class DeviceApiController
             throw new DeviceApiNotFoundException('Channel with id'.$channelId.' not found');
         }
         $channels = array(new ShortEpgType($channel));
-        $response = new ShortEpgResponse(1,$channels,array());
+        $response = new ShortEpgResponse(1,$channels,$this->ageGroups);
         return self::generateResponse(new RequestResponse('short_epg',200,$response));
 
     }
@@ -417,9 +419,9 @@ class DeviceApiController
         /**
          * @var $commands Command[]
          */
-        $commands = array(); //TODO: fixit
+        $commands = array();
 
-        $query = Database::getInstance()->getMysqli()->query('SELECT id FROM events WHERE uid='.$this->device->getId().' AND ended=0 AND sended=0');
+        $query = QueryBuilder::query('SELECT id FROM events WHERE uid='.$this->device->getId().' AND ended=0 AND sended=0');
 
         if($query->num_rows>0){
             while($row = $query->fetch_assoc()){
@@ -435,14 +437,7 @@ class DeviceApiController
         return self::generateResponse(new RequestResponse('messages',200,$messagesResponse));
     }
 
-    /**
-     * @link http://wiki.tvip.ru/private/json_api#messages
-     * @param Request $request
-     * @return JsonResponse
-     * @throws DeviceApiNotFoundException
-     * @throws DeviceApiWrongSyntaxException
-     *
-     */
+
     public function postMessagesAction(){
 
 
@@ -470,14 +465,14 @@ class DeviceApiController
     /**
      * @return string hash of available channels
      */
-    private function getChannelsHash(){
+/*    private function getChannelsHash(){
         $ids = array();
         foreach($this->getChannels() as $channel){
             array_push($ids,$channel->getId());
         }
         sort($ids);
         return md5(implode(';', $ids));
-    }
+    }*/
 
     /**
      * Return response with all needed headers
@@ -509,7 +504,7 @@ class DeviceApiController
 
     private function getFavorites(){
         if(count($this->favorites)==0){
-            $result = Database::getInstance()->getMysqli()->query('SELECT id FROM tv_genre');
+            $result = QueryBuilder::query('SELECT id FROM tv_genre');
 
             while ($row = $result->fetch_assoc()){
                 array_push($this->favorites, new FavoriteGroup($row['id']));
@@ -523,7 +518,7 @@ class DeviceApiController
 
     private function getChannels(){
 
-        if(count($this->channels)==0){
+        if(count($this->channels)==0 && $this->device->isEnabled()){
             foreach ($this->getChannelsIds() as $id){
                 array_push($this->channels, new Channel($id));
             }
@@ -544,7 +539,7 @@ class DeviceApiController
         //если включены тарифные планы и выключена подписка тв на тарифных планах
         if ($this->getSafe('enable_tariff_plans', false) && !$this->getSafe('enable_tv_subscription_for_tariff_plans', false)){
 
-            $subscription = $this->device->getServicesByType('tv');
+            $subscription = $this->device->getServicesByType();
             if (empty($subscription)){
                 $subscription = array();
             }
@@ -562,7 +557,7 @@ class DeviceApiController
 
         if($channel_ids == 'all'){
             $channel_ids=array();
-            $query = Database::getInstance()->getMysqli()->query('SELECT id FROM itv');
+            $query = QueryBuilder::query('SELECT id FROM itv');
             while($row=$query->fetch_assoc()){
                 array_push($channel_ids,$row['id']);
             }
