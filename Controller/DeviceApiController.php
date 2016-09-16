@@ -325,7 +325,7 @@ class DeviceApiController
             $this->getChannels(),
             $this->ageGroups,
             $this->getFavorites(),
-            '',
+            '', //channels hash
             new CasConfig(),
             $baseLogoUrl
 

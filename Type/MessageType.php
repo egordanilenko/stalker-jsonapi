@@ -12,8 +12,9 @@ class MessageType
         'update_epg' => 'refresh_channel_list',
         'cut_off'    => 'refresh_channel_list',
         'cut_on'     => 'refresh_channel_list',
-        'reboot'     => 'restart'
-
+        'reboot'     => 'restart',
+        'send_msg'   => 'user_message',
+        'reinit'     => 'reinit'
     );
 
     /**
@@ -40,7 +41,15 @@ class MessageType
     {
         if(!array_key_exists($command->getEvent(),self::$mapping)) throw new \Exception("Mapping for ".$command->getEvent()." not found");
         $this->id = $command->getId();
-        $this->command = self::$mapping[$command->getEvent()];
+        $command->isRebootAfterOk() ?  $this->command='reinit':$this->command = self::$mapping[$command->getEvent()];
         $this->args = (object)array();
+        if($this->command=='user_message'){
+            $this->args = array(
+                'type'  => $command->isNeedConfirm() ? 'confirm' : 'notify',
+                'title' => $command->getHeader(),
+                'text'  => $command->getMsg()
+            );
+        }
+
     }
 }

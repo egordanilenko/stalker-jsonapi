@@ -79,20 +79,20 @@ function error_handler($number, $string, $file, $line)
     throw  new \Exception("Error on ".$line.' in '.$file.': '.$string, $number);
 }
 
+$debug=false;
 
 try{
-
     $self_config = '/etc/stalker_jsonapi.ini';
     include_once ('autoload.php');
-    //include_once ('config.php');
 
     $stalker_path='/var/www/stalker_portal/';
     $staler_host= $_SERVER['HTTP_HOST'];
 
     if(file_exists($self_config)){
         $override = parse_ini_file($self_config);
-        if(isset($override['stalker_host'])) $staler_host = $override['stalker_host'];
-        if(isset($override['stalker_path'])) $stalker_path = $override['stalker_path'];
+        if(isset($override['stalker_host'])) $staler_host    = $override['stalker_host'];
+        if(isset($override['stalker_path'])) $stalker_path   = $override['stalker_path'];
+        if(isset($override['debug']))        $debug          = $override['debug'];
     }
 
     $conf = array();
@@ -133,3 +133,7 @@ try{
 
 $jsonResponse->renderJson();
 
+if($debug){
+   $log = array('request'=>$request->toLoggerMessage(),'response'=>$jsonResponse->toLoggerMessage());
+   Logger::write(json_encode($log,128));
+}

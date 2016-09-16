@@ -28,7 +28,9 @@ class MessagesResponse implements ResponseInterface
     {
         $this->poll = $poll;
         foreach($commands as $command){
-            if(array_key_exists($command->getEvent(),MessageType::$mapping))  array_push($this->messages,new MessageType($command));
+            if(array_key_exists($command->getEvent(),MessageType::$mapping)){
+                array_push($this->messages,new MessageType($command));
+            }
         }
     }
 
