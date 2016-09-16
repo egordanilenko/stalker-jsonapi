@@ -12,9 +12,9 @@ class PoTranslator
      * @var array
      */
     private $mapping=array();
-    private function __construct() { /* ... @return Singleton */ }  // Защищаем от создания через new Singleton
-    private function __clone() { /* ... @return Singleton */ }  // Защищаем от создания через клонирование
-    private function __wakeup() { /* ... @return Singleton */ }  // Защищаем от создания через unserialize
+    private function __construct() {}
+    private function __clone() {}
+    private function __wakeup() {}
 
     static public function getInstance() {
         return

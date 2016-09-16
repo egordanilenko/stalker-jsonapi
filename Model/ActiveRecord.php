@@ -8,35 +8,46 @@ use Exception\RecordNotFoundException;
 use Utils\Database;
 use Utils\QueryBuilder;
 
-class DatabaseField{
-    public $name;
-    public $value;
-}
-
-
 abstract class ActiveRecord
 {
+
+    /**
+     * Fields types
+     */
+    const FIELD_INTEGER=0;
+    const FIELD_STRING=1;
+
     /**
      * @var int
      */
     protected $id;
 
+    /**
+     * @var array Mapping field to types
+     */
     private $_fieldMapping = array();
+
+    /**
+     * @var string table name
+     */
     protected $_table;
 
+    /**
+     * @var array ignoring fields for mapping
+     */
     private $_internalFields = array(
         '_table', 'id', '_fieldMapping', '_internalFields'
     );
 
-    const INTEGER=0;
-    const STRING=1;
-
+    /**
+     * @var array Mapping annotation data type to const values
+     */
     static private $typeMapping=array(
-        'integer'=>self::INTEGER,
-        'int'=>self::INTEGER,
-        'bool'=>self::INTEGER,
-        'string'=>self::STRING,
-        'str'=>self::STRING
+        'integer'=>self::FIELD_INTEGER,
+        'int'=>self::FIELD_INTEGER,
+        'bool'=>self::FIELD_INTEGER,
+        'string'=>self::FIELD_STRING,
+        'str'=>self::FIELD_STRING
     );
 
 
@@ -48,7 +59,7 @@ abstract class ActiveRecord
         foreach ($reflection->getProperties() as $reflectionProperty) {
 
             if (!in_array($reflectionProperty->getName(), $this->_internalFields)) {
-                $type = self::STRING;
+                $type = self::FIELD_STRING;
 
                 if (preg_match('/@var (\w+)/', $reflectionProperty->getDocComment(), $matches)) {
                     if (array_key_exists($matches[1], self::$typeMapping)) {
@@ -76,7 +87,7 @@ abstract class ActiveRecord
             if(count($fields)==0) throw  new RecordNotFoundException();
 
             foreach ($fields as $key=>$value){
-                if(isset($this->_fieldMapping[$key])) $value = $this->_fieldMapping[$key]==self::INTEGER? (int)$value:$value;
+                if(isset($this->_fieldMapping[$key])) $value = $this->_fieldMapping[$key]==self::FIELD_INTEGER? (int)$value:$value;
                 if(property_exists($this,$key)) $this->{$key}=$value;
             }
         }
@@ -89,7 +100,6 @@ abstract class ActiveRecord
     {
         return (int)$this->id;
     }
-
 
     /**
      * save entity to database
@@ -106,7 +116,7 @@ abstract class ActiveRecord
                 $databaseField = new DatabaseField();
                 $databaseField->name = $reflectionProperty->getName();
                 $reflectionProperty->setAccessible(true);
-                $databaseField->value = $type==self::STRING ? "'".$reflectionProperty->getValue($this)."'" : (int)$reflectionProperty->getValue($this);
+                $databaseField->value = $type==self::FIELD_STRING ? "'".$reflectionProperty->getValue($this)."'" : (int)$reflectionProperty->getValue($this);
                 $reflectionProperty->setAccessible(false);
 
                 array_push($databaseFields,$databaseField);

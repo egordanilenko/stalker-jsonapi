@@ -370,6 +370,7 @@ class Inflector
                 return self::$cache['pluralize'][$word];
             }
         }
+        return $word; //failsafe
     }
 
     /**

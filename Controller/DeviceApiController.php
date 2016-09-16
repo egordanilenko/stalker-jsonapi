@@ -320,7 +320,7 @@ class DeviceApiController
         $baseLogoUrl = isset($this->config['stalker_host']) ? 'http://'.$this->config['stalker_host']: 'http://'.$_SERVER['SERVER_NAME'];
         $baseLogoUrl = $baseLogoUrl.'/stalker_portal/misc/logos/240/';
         $channelsResponse = new ChannelsResponse(
-            time(),//channel version, this is temporary value, channels will refresh every channel request interval
+            0,//channel version, TODO: check channel version change
             0,//epg version
             $this->getChannels(),
             $this->ageGroups,

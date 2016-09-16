@@ -34,6 +34,9 @@ class Router
      */
     private $method;
 
+    /**
+     * @var string
+     */
     private $command;
 
     public function __construct(Request $request, array $config)
