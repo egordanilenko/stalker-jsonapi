@@ -23,8 +23,8 @@ ln -s /var/www/jsonapi/tvipapi /var/www/tvipapi
 ```
 5)  By default configuration use this variables:
 ```
-    $stalker_path='/var/www/stalker_portal/';
-    $staler_host= $_SERVER['HTTP_HOST'];     
+    $stalker_path = '/var/www/stalker_portal/';
+    $stalker_host = $_SERVER['HTTP_HOST'];     
 ```
 6) if your configuration have difference with default values, please make ini configuration
  ```
