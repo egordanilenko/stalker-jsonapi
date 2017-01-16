@@ -1,4 +1,4 @@
-This package implements [a TVIP JSON Middleware API](http://wiki.tvip.ru/en/tvip_json_middleware_api/1) protocol for Stalker Middleware
+This package implements [TVIP JSON Middleware API](http://wiki.tvip.ru/en/tvip_json_middleware_api/1) protocol for Stalker Middleware
  
 For deploy this package on your system:
 
@@ -28,7 +28,7 @@ ln -s /var/www/jsonapi/tvipapi /var/www/tvipapi
 ```
 6) if your configuration have difference with default values, please make ini configuration
  ```
-touch /etc/stalker_jsonapi.in
+touch /etc/stalker_jsonapi.ini
 ```
 and redefine config values for 
 ```
