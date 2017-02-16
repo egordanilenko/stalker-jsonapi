@@ -1,5 +1,24 @@
 This package implements [TVIP JSON Middleware API](http://wiki.tvip.ru/en/tvip_json_middleware_api/1) protocol for Stalker Middleware
+
+For quick install plugin into stalker:
+
+1) Download package from github:
+```
+wget https://github.com/egordanilenko/stalker-jsonapi/archive/master.zip
+
+```
+2) Unzip package to any folder except /var/www
+```
+unzip master.zip
+```
+
+3) Make symlink to stalker folder near stalker_porta
  
+```
+ln -s /%anypath%/stalker-jsonapi-master/tvipapi/ /%stalker_common_directory%/tvipapi
+```
+
+
 For deploy this package on your system:
 
 1) Make distribution: 
