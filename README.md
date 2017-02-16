@@ -17,7 +17,7 @@ unzip master.zip
 ```
 ln -s /%anypath%/stalker-jsonapi-master/tvipapi/ /%stalker_common_directory%/tvipapi
 ```
-
+4) For custom configuration see paragraph 5 and 6 at next toturial
 
 For deploy this package on your system:
 
