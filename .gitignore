@@ -6,6 +6,7 @@
 # User-specific stuff:
 .idea/workspace.xml
 .idea/tasks.xml
+.idea/modules.xml
 .idea/dictionaries
 .idea/vcs.xml
 .idea/jsLibraryMappings.xml
@@ -45,3 +46,4 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+Будет удалено .idea/copyright/
