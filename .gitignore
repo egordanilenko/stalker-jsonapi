@@ -50,3 +50,5 @@ fabric.properties
 /.idea/stalker-jsonapi.iml
 /.idea/misc.xml
 Будет удалено .idea/misc.xml
+/.idea/copyright/profiles_settings.xml
+Будет удалено .idea/
