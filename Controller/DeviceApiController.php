@@ -245,8 +245,7 @@ class DeviceApiController extends AbstractController
     public function epgAction($channelId, $date)
     {
         $date = str_replace(".json","",$date);
-       // $date = $this->request->getGetParam('date');
-       // $channelId=(int)$this->request->getGetParam('channel_id');
+        
         /**
          * @var $channel Channel
          */
@@ -296,9 +295,6 @@ class DeviceApiController extends AbstractController
 
 
     public function channelShortEpgAction($channelId){
-        //$channelId=$this->request->getGetParam('channel');
-
-        var_dump($channelId);
 
         /**
          * @var $channel Channel
