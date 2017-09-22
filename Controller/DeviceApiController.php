@@ -15,6 +15,7 @@ use Model\Device;
 use Model\EpgItem;
 use Model\FavoriteGroup;
 use Model\Request;
+use Model\vod\VodTag;
 use Response\AuthResponse;
 use Response\ChannelsResponse;
 use Response\EpgResponse;
@@ -27,43 +28,26 @@ use Response\PreflightResponse;
 use Response\ShortEpgResponse;
 use Response\UnregisterResponse;
 use Response\UserInfoResponse;
+use Response\vod\VodTagListResponse;
 use Type\PollType;
 use Type\ShortEpgType;
 use Utils\PoTranslator;
 use Utils\QueryBuilder;
 
 
-class DeviceApiController
+class DeviceApiController extends AbstractController
 {
     const REGISTER_TYPE='login';
     const SESSION_TYPE='token';
-    const API_VERSION = 1;
-
-    /**
-     * @var string
-     */
-    private $language;
-
-    private $registered = false;
-
-    /**
-     * @var Device
-     */
-    private $device;
-    /**
-     * @var Request
-     */
-    private $request;
-
-    /**
-     * @var integer
-     */
-    private $clientIp;
-
+    
     /**
      * @var array
      */
-    private static $anonymousAction = array('serverInfoAction','postRegisterAction','authAction','shortEpgAction');
+    private static $anonymousAction = array(
+        'Controller\DeviceApiController@serverInfoAction',
+        'Controller\DeviceApiController@postRegisterAction',
+        'Controller\DeviceApiController@authAction',
+        'Controller\DeviceApiController@shortEpgAction');
 
     /**
      * @var Channel[]
@@ -76,93 +60,12 @@ class DeviceApiController
     private $favorites = array();
 
     /**
-     * @var AgeGroup[]
-     */
-    private $ageGroups = array();
-
-    /**
-     * @var array
-     */
-    private $config = array();
-
-    private $authUrl = null;
-
-    private $debug=false;
-
-
-    public function __construct(Request $request, array $config)
-    {
-
-        $this->config = $config;
-        $this->request = $request;
-        $this->authUrl = $this->getSafe('auth_url',null);
-        $this->debug = $this->getSafe('debug',false);
-
-        //virtual Age Group
-        array_push($this->ageGroups, new AgeGroup(0,18,'18+'));
-
-        $this->clientIp = $request->getHeaderParam('x-real-ip') ? $request->getHeaderParam('x-real-ip') : $_SERVER['REMOTE_ADDR'];
-
-        $mac = strtoupper($request->getHeaderParam('Mac-Address'));
-
-        $lang = $this->request->getHeaderParam('Accept-Language');
-
-        if($lang){
-            if(strlen($lang)==2){
-                $lang = strtolower($lang).'_'.strtoupper($lang).'.utf8';
-            }else{
-                $lang = str_replace('-','_',substr($lang,0,strpos($lang,','))).'.utf8';
-            }
-
-        }else{
-            $lang=$this->getSafe('default_locale','ru_RU.utf8');
-        }
-
-        $this->language  = $lang;
-
-        $path = $this->getSafe('stalker_path','/var/www/stalker_portal/').'/server/locale/'.substr($lang,0,2).'/LC_MESSAGES/stb.po';
-
-        try{
-            PoTranslator::getInstance()->setPath($path);
-        }catch (\Exception $e){
-            $path = $this->getSafe('stalker_path','/var/www/stalker_portal/').'/server/locale/'.substr($this->getSafe('default_locale','en'),0,2).'/LC_MESSAGES/stb.po';
-            PoTranslator::getInstance()->setPath($path);
-        }
-
-        $token = $request->getHeaderParam('Auth-Token');
-
-        if($mac){
-
-            $query = QueryBuilder::query("SELECT id FROM users WHERE mac LIKE '$mac' LIMIT 0,1");
-            $search = $query->fetch_object();
-
-            $id = is_object($search) ? (int)$search->id:null;
-            $this->device = new Device($id);
-            $this->device->setKeepAlive(new \DateTime());
-            $this->device->setImageVersion($request->getHeaderParam('device-firmware'));
-            $this->device->setStbType($request->getHeaderParam('device-type'));
-            $this->device->setLocale($lang);
-            $this->device->setIp($this->clientIp);
-            $this->device->setMac($mac);
-
-            if($token!=null && $this->device->getAccessToken() == $token) $this->registered = true;
-
-
-            if($this->device->getId()) $this->device->save();
-        }else{
-            throw  new DeviceApiWrongSyntaxException('Mac address not present');
-        }
-
-
-    }
-
-    /**
      * CORS preflight request (request with OPTIONS method to target url, then original request), must return valid response with correct headers
      * @link https://en.wikipedia.org/wiki/Cross-origin_resource_sharing
      * @return JsonResponse
      */
     public function preflightAction(){
-        return self::generateResponse(new RequestResponse('preflight', 200, new PreflightResponse()));
+        return new RequestResponse('preflight', 200, new PreflightResponse());
     }
 
     /**
@@ -182,7 +85,7 @@ class DeviceApiController
             array() //cas types
         );
 
-        return self::generateResponse(new RequestResponse('server_info',200,$serverInfoResponse));
+        return new RequestResponse('server_info',200,$serverInfoResponse);
     }
 
     /**
@@ -222,7 +125,7 @@ class DeviceApiController
         $code = 200;
 
 
-        return self::generateResponse(new RequestResponse('auth',$code,$authResponse));
+        return new RequestResponse('auth',$code,$authResponse);
     }
 
     /**
@@ -275,7 +178,7 @@ class DeviceApiController
             throw new DeviceApiIncorrectCredintialsExcption('Login or password is incorrect');
         }
 
-        return self::generateResponse(new RequestResponse('register',200,$registerResponse));
+        return new RequestResponse('register',200,$registerResponse);
     }
 
     /**
@@ -289,7 +192,7 @@ class DeviceApiController
         $this->device->setMac(null);
         $this->device->setAccessToken(null);
         $this->device->save();
-        return self::generateResponse(new RequestResponse('unregister',200,new UnregisterResponse()));
+        return new RequestResponse('unregister',200,new UnregisterResponse());
     }
 
     /**
@@ -307,7 +210,7 @@ class DeviceApiController
             0
         );
 
-        return self::generateResponse(new RequestResponse('user_info',200,$userInfoResponse));
+        return new RequestResponse('user_info',200,$userInfoResponse);
 
     }
 
@@ -331,8 +234,7 @@ class DeviceApiController
 
         );
 
-        $response = new RequestResponse('channels',200,$channelsResponse);
-        return self::generateResponse($response,$response->status);
+        return new RequestResponse('channels',200,$channelsResponse);
     }
 
     /**
@@ -340,11 +242,11 @@ class DeviceApiController
      * @return JsonResponse
      * @throws DeviceApiNotFoundException
      */
-    public function epgAction()
+    public function epgAction($channelId, $date)
     {
-
-        $date = $this->request->getGetParam('date');
-        $channelId=(int)$this->request->getGetParam('channel_id');
+        $date = str_replace(".json","",$date);
+       // $date = $this->request->getGetParam('date');
+       // $channelId=(int)$this->request->getGetParam('channel_id');
         /**
          * @var $channel Channel
          */
@@ -375,8 +277,7 @@ class DeviceApiController
 
 
         if(count($epgResponse->events)==0) throw new DeviceApiNotFoundException('Events not found');
-        $response = new RequestResponse('epg',200,$epgResponse);
-        return self::generateResponse($response,$response->status);
+        return new RequestResponse('epg',200,$epgResponse);
     }
 
     /**
@@ -389,13 +290,16 @@ class DeviceApiController
             array_push($channels,new ShortEpgType($channel));
         }
         $response = new ShortEpgResponse(1,$channels,array());
-        return self::generateResponse(new RequestResponse('short_epg',200,$response));
+        return new RequestResponse('short_epg',200,$response);
 
     }
 
 
-    public function channelShortEpgAction(){
-        $channelId=$this->request->getGetParam('channel');
+    public function channelShortEpgAction($channelId){
+        //$channelId=$this->request->getGetParam('channel');
+
+        var_dump($channelId);
+
         /**
          * @var $channel Channel
          */
@@ -406,7 +310,7 @@ class DeviceApiController
         }
         $channels = array(new ShortEpgType($channel));
         $response = new ShortEpgResponse(1,$channels,$this->ageGroups);
-        return self::generateResponse(new RequestResponse('short_epg',200,$response));
+        return new RequestResponse('short_epg',200,$response);
 
     }
 
@@ -434,21 +338,16 @@ class DeviceApiController
             $command->setEnded(1);
             $command->save();
         }
-        return self::generateResponse(new RequestResponse('messages',200,$messagesResponse));
+        return new RequestResponse('messages',200,$messagesResponse);
     }
 
 
     public function postMessagesAction(){
 
-
         $messagesResponse = new MessagesResponse($this->getPoll(),array());
-        return self::generateResponse(new RequestResponse('messages',200,$messagesResponse));
+        return new RequestResponse('messages',200,$messagesResponse);
     }
-
-
-
-
-
+    
     /**
      * @return PollType
      */
@@ -480,27 +379,7 @@ class DeviceApiController
      * @param int $code
      * @return JsonResponse
      */
-    public static function generateResponse(RequestResponse $requestResponse,$code=200){
-
-        $headers = array(
-            'Access-Control-Allow-Methods'     => 'GET, POST, OPTIONS',
-            'Access-Control-Request-Headers'   => 'Accept, X-Requested-With',
-            'Access-Control-Allow-Credentials' => 'true',
-            'Access-Control-Allow-Origin'      => '*',
-            'Access-Control-Allow-Headers'     => 'Mac-Address, Device-Type, Device-Version, Device-Os, Device-Firmware, X-Auth-Token, Auth-Token'
-        );
-
-        if(isset($_SERVER['HTTP_ORIGIN'])){
-            $headers = array_merge(
-                $headers,
-                array(
-                    'Access-Control-Allow-Origin'=>$_SERVER['HTTP_ORIGIN']
-                )
-            );
-        }
-
-        return new JsonResponse($requestResponse,$code,$headers);
-    }
+    
 
     private function getFavorites(){
         if(count($this->favorites)==0){
@@ -509,8 +388,6 @@ class DeviceApiController
             while ($row = $result->fetch_assoc()){
                 array_push($this->favorites, new FavoriteGroup($row['id']));
             }
-
-
 
         }
         return $this->favorites;
@@ -527,14 +404,10 @@ class DeviceApiController
 
     }
 
-    public function getSafe($key, $default){
-
-        return isset($this->config[$key]) ? $this->config[$key]: $default;
-
-    }
+   
 
 
-    public function getChannelsIds(){
+    public function getChannelsIds() {
 
         //если включены тарифные планы и выключена подписка тв на тарифных планах
         if ($this->getSafe('enable_tariff_plans', false) && !$this->getSafe('enable_tv_subscription_for_tariff_plans', false)){

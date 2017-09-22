@@ -10,17 +10,17 @@ class AgeGroup
     /**
      * @var int
      */
-    private $id;
+    public $id;
 
     /**
      * @var int
      */
-    private $age;
+    public $age;
 
     /**
      * @var string
      */
-    private $caption;
+    public $caption;
 
     /**
      * AgeGroup constructor.

@@ -211,7 +211,7 @@ class Device extends ActiveRecord
 
     public function setKeepAlive(\DateTime $keep_alive)
     {
-        $this->keep_alive = $keep_alive->format('c');
+        $this->keep_alive = $keep_alive->format('Y-m-d H:m:s');
     }
 
 
