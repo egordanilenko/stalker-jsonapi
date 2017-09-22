@@ -5,9 +5,9 @@ use Utils\Database;
 use Utils\Logger;
 use Response\ErrorResponse;
 use Response\JsonResponse;
+use Utils\ORM;
 
 set_error_handler('error_handler');
-
 
 if (!function_exists('http_response_code')) {
     function http_response_code($code = NULL) {
@@ -100,6 +100,8 @@ try{
     $config_path = $stalker_path.'/server/config.ini';
     $custom_path = $stalker_path.'/server/custom.ini';
 
+
+
     if(file_exists($config_path)) {
         $conf   = parse_ini_file($config_path);
     }else{
@@ -112,26 +114,53 @@ try{
     }
     $conf = array_merge($conf,array('stalker_path'=>$stalker_path));
 
-    $mysqli = new mysqli(isset($conf['mysql_host']) ? $conf['mysql_host']:'localhost' , $conf["mysql_user"], $conf["mysql_pass"], $conf["db_name"]);
+    $dbhost = isset($conf['mysql_host']) ? $conf['mysql_host']:'localhost';
+
+    $mysqli = new mysqli($dbhost , $conf["mysql_user"], $conf["mysql_pass"], $conf["db_name"]);
     $mysqli->set_charset("utf8");
 
     Database::getInstance()->setMysqli($mysqli);
 
-    $path = substr($_SERVER['REQUEST_URI'], strlen($_SERVER['BASE']));
+    ORM::configure("mysql:host=$dbhost;dbname=".$conf["db_name"]);
+    ORM::configure('username', $conf["mysql_user"]);
+    ORM::configure('password', $conf["mysql_pass"]);
+    ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
+
+    //$path = substr($_SERVER['REQUEST_URI'], strlen($_SERVER['BASE']));
+    $path = $_SERVER['REQUEST_URI'];
     $request = new Request($_GET,$_POST,getallheaders(),file_get_contents('php://input'),$path);
+
 
     if (isset($stalker_host)) $conf = array_merge($conf,array('stalker_host'=>$stalker_host,'debug'=>true));
 
-    $router = new Router($request,$conf);
+    $router = Router::fromGlobals(new Request($_GET,$_POST,getallheaders(),file_get_contents('php://input'),$path),$conf);
+
+
+    // Add array of routes.
+        $router->add([
+            '/tvipapi/json/auth.json'                    => 'Controller\DeviceApiController@authAction',
+            '/tvipapi/json/register.json'                => 'Controller\DeviceApiController@registerAction',
+            '/tvipapi/json/unregister.json'              => 'Controller\DeviceApiController@unregisterAction',
+            '/tvipapi/json/messages.json'                => 'Controller\DeviceApiController@messagesAction',
+            '/tvipapi/json/user_info.json'               => 'Controller\DeviceApiController@userInfoAction',
+            '/tvipapi/json/server_info.json'             => 'Controller\DeviceApiController@serverInfoAction',
+            '/tvipapi/json/channels.json'                => 'Controller\DeviceApiController@channelsAction',
+            '/tvipapi/json/short_epg/:any.json'          => 'Controller\DeviceApiController@shortEpgAction',
+            '/tvipapi/json/short_epg/:any/epg.json'      => 'Controller\DeviceApiController@channelShortEpgAction',
+            '/tvipapi/json/epg/:any/:any'                => 'Controller\DeviceApiController@epgAction',
+            '/tvipapi/json/vod/tag_list/:any'            => 'Controller\VodController@tagListAction',
+            '/tvipapi/json/vod/content_list.json'        => 'Controller\VodController@contentListAction',
+            '/tvipapi/json/vod/content/:any'             => 'Controller\VodController@contentAction',
+        ]);
+
     $jsonResponse = $router->getResponse();
 
 }catch (Exception $e){
 
     Logger::log($e);
     $jsonResponse = new JsonResponse(new ErrorResponse($e->getCode(),$e->getMessage()), $e->getCode());
+    $jsonResponse->renderJson();
 }
-
-$jsonResponse->renderJson();
 
 if($debug){
    $log = array('request'=>$request->toLoggerMessage(),'response'=>$jsonResponse->toLoggerMessage());
