@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/jsonapi.iml" filepath="$PROJECT_DIR$/.idea/jsonapi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/stalker-jsonapi.iml" filepath="$PROJECT_DIR$/.idea/stalker-jsonapi.iml" />
     </modules>
   </component>
 </project>
