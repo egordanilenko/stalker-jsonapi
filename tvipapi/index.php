@@ -4,7 +4,7 @@ use Controller\Router;
 use Utils\Database;
 use Utils\Logger;
 use Response\ErrorResponse;
-use Response\JsonResponse;
+use Response\M3u8Response;
 use Utils\ORM;
 
 set_error_handler('error_handler');
@@ -56,7 +56,6 @@ if (!function_exists('http_response_code')) {
                     exit('Unknown http status code "' . htmlentities($code) . '"');
                     break;
             }
-
             $protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
 
             header($protocol . ' ' . $code . ' ' . $text);
@@ -101,7 +100,6 @@ try{
     $custom_path = $stalker_path.'/server/custom.ini';
 
 
-
     if(file_exists($config_path)) {
         $conf   = parse_ini_file($config_path);
     }else{
@@ -124,7 +122,8 @@ try{
     ORM::configure("mysql:host=$dbhost;dbname=".$conf["db_name"]);
     ORM::configure('username', $conf["mysql_user"]);
     ORM::configure('password', $conf["mysql_pass"]);
-    ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
+    ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'set session sql_mode=\'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION\', NAMES utf8'));
+    //ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8;'));
 
     //$path = substr($_SERVER['REQUEST_URI'], strlen($_SERVER['BASE']));
     $path = $_SERVER['REQUEST_URI'];
@@ -147,10 +146,11 @@ try{
             '/tvipapi/json/channels.json'                => 'Controller\DeviceApiController@channelsAction',
             '/tvipapi/json/short_epg/:any.json'          => 'Controller\DeviceApiController@shortEpgAction',
             '/tvipapi/json/short_epg/:any/epg.json'      => 'Controller\DeviceApiController@channelShortEpgAction',
-            '/tvipapi/json/epg/:any/:any'                => 'Controller\DeviceApiController@epgAction',
-            '/tvipapi/json/vod/tag_list/:any'            => 'Controller\VodController@tagListAction',
             '/tvipapi/json/vod/content_list.json'        => 'Controller\VodController@contentListAction',
             '/tvipapi/json/vod/content/:any'             => 'Controller\VodController@contentAction',
+            '/tvipapi/json/archive/:num/:num/index.m3u8' => 'Controller\DVRController@timeShiftAction',
+            '/tvipapi/json/vod/tag_list/:any'            => 'Controller\VodController@tagListAction',
+            '/tvipapi/json/epg/:any/:any'                => 'Controller\DeviceApiController@epgAction',
         ]);
 
     $jsonResponse = $router->getResponse();
@@ -158,7 +158,7 @@ try{
 }catch (Exception $e){
 
     Logger::log($e);
-    $jsonResponse = new JsonResponse(new ErrorResponse($e->getCode(),$e->getMessage()), $e->getCode());
+    $jsonResponse = new \Response\JsonResponse(new ErrorResponse($e->getCode(),$e->getMessage()), $e->getCode());
     $jsonResponse->renderJson();
 }
 

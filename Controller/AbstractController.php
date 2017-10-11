@@ -56,7 +56,7 @@ abstract class AbstractController {
 
         $this->config = $config;
         $this->request = $request;
-        //var_dump($request);
+
         $this->authUrl = $this->getSafe('auth_url',null);
         $this->debug = $this->getSafe('debug',false);
 
@@ -101,6 +101,7 @@ abstract class AbstractController {
             $id = is_object($search) ? (int)$search->id:null;
             $this->device = new Device($id);
             $this->device->setKeepAlive(new \DateTime());
+            $this->device->setLastActive(new \DateTime());
             $this->device->setImageVersion($request->getHeaderParam('device-firmware'));
             $this->device->setStbType($request->getHeaderParam('device-type'));
             $this->device->setLocale($lang);
