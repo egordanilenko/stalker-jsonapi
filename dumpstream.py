@@ -53,8 +53,9 @@ def main():
         try:
             data = bytearray(b" " * 2048)
             size = sock.recv_into(data)
+
             if data and not buf:
-                sys.stderr.write('Start capturing on time: ' + str(time.time()) + "\n")
+                sys.stderr.write('Start capturing\n')
             buf = data[:size]
             end_segment_byte = end_segment_byte + size
             range_time = time.time() - start_segment_time
@@ -97,6 +98,7 @@ def main():
                     f.close()
                 if args.callback_url:
                     async_open_url(args.callback_url, {'action': 'ended'})
+                    time.sleep(5)
                 sys.exit()
 
             if not f:
@@ -115,7 +117,6 @@ def main():
                     start_segment_byte = None
                     f.close()
                     async_rm_old_files()
-
 
                     if args.callback_url:
                         async_open_url(args.callback_url, {'start_time': int(time.mktime((datetime.datetime.strptime(fname, date_format) - datetime.timedelta(hours=args.pieces_number)).timetuple()))})
