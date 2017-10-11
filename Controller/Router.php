@@ -7,6 +7,7 @@ use Exception\DeviceApiAuthenticationRequiredException;
 use Model\Request;
 use Response\ErrorResponse;
 use Response\JsonResponse;
+use Response\M3u8Response;
 use Response\RequestResponse;
 use Utils\Inflector;
 
@@ -73,8 +74,8 @@ class Router
         $array = explode('/',$path);
         $method = Inflector::camelize(array_shift($array));
         $this->command = Inflector::tableize($method);
-        $gets = array();
-        /*if(array_key_exists($method,$this->argumentMapper)){
+        /*$gets = array();
+        if(array_key_exists($method,$this->argumentMapper)){
             foreach($array as $key=>$value){
                 $gets[$this->argumentMapper[$method][$key]]=$value;
             }
@@ -99,17 +100,17 @@ class Router
      * @return JsonResponse
      */
     public function getResponse(){
-        
+
         if ($this->isFound()) {
 
-           if($this->deviceApiController->isRegistered() == false && in_array($this->getRequestHandler(),$this->deviceApiController->getAnonymousAction())==false) throw  new DeviceApiAuthenticationRequiredException('Need auth');
+           //if($this->deviceApiController->isRegistered() == false && in_array($this->getRequestHandler(),$this->deviceApiController->getAnonymousAction())==false) throw  new DeviceApiAuthenticationRequiredException('Need auth');
 
-            $this->executeHandler(
-                $this->getRequestHandler(),
-                $this->getParams()
-            );
-        }
-        else {
+           return $this->executeHandler(
+                    $this->getRequestHandler(),
+                    $this->getParams()
+                );
+        } else {
+
             // Simple "Not found" handler
             $requestResponse = new ErrorResponse(404,'Not found');
             return new JsonResponse($requestResponse,404);
@@ -208,6 +209,8 @@ class Router
     {
         $uri = $this->getRequestUri();
 
+        //var_dump($this);
+
         // if URI equals to route
         if (isset($this->routes[$uri])) {
             $this->requestHandler = $this->routes[$uri];
@@ -257,6 +260,11 @@ class Router
             $ca = explode('@', $handler);
             $controllerName = $ca[0];
             $action = $ca[1];
+
+            if($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $action =  'post'.ucfirst($action);
+            }
+
             if (class_exists($controllerName)) {
                 $controller = new $controllerName($this->request, $this->config);
             } else {
@@ -266,14 +274,39 @@ class Router
                 throw new \RuntimeException("Method '{$controllerName}::{$action}' not found");
             }
 
-            if($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $action =  'post'.ucfirst($action);
-            }
-
             $response = call_user_func_array(array($controller, $action), $params);
 
-            self::generateResponse($response,$response->status);
+            if($response instanceof RequestResponse){
+                self::generateResponse($response,$response->status);
+            } else {
+                self::generateM3u8Response($response);
+            }
+
+
         }
+    }
+
+    public static function generateM3u8Response($requestResponse,$code=200){
+
+        $headers = array(
+            'Access-Control-Allow-Methods'     => 'GET, POST, OPTIONS',
+            'Access-Control-Request-Headers'   => 'Accept, X-Requested-With',
+            'Access-Control-Allow-Credentials' => 'true',
+            'Access-Control-Allow-Origin'      => '*',
+            'Access-Control-Allow-Headers'     => 'Mac-Address, Device-Type, Device-Version, Device-Os, Device-Firmware, X-Auth-Token, Auth-Token'
+        );
+
+        if(isset($_SERVER['HTTP_ORIGIN'])){
+            $headers = array_merge(
+                $headers,
+                array(
+                    'Access-Control-Allow-Origin'=>$_SERVER['HTTP_ORIGIN']
+                )
+            );
+        }
+
+        $response = new  M3u8Response($requestResponse,$code,$headers);
+        $response->renderJson();
     }
 
     public static function generateResponse(RequestResponse $requestResponse,$code=200){

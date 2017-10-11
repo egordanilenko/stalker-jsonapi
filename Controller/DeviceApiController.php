@@ -22,7 +22,7 @@ use Response\EpgResponse;
 use Response\MessagesResponse;
 use Response\RegisterResponse;
 use Response\RequestResponse;
-use Response\JsonResponse;
+use Response\M3u8Response;
 use Response\ServerInfoResponse;
 use Response\PreflightResponse;
 use Response\ShortEpgResponse;
@@ -47,7 +47,9 @@ class DeviceApiController extends AbstractController
         'Controller\DeviceApiController@serverInfoAction',
         'Controller\DeviceApiController@postRegisterAction',
         'Controller\DeviceApiController@authAction',
-        'Controller\DeviceApiController@shortEpgAction');
+        'Controller\DeviceApiController@shortEpgAction',
+        'Controller\DVRController@timeShiftAction'
+    );
 
     /**
      * @var Channel[]
@@ -96,6 +98,7 @@ class DeviceApiController extends AbstractController
         if(!$this->device->getId() && !$this->authUrl){
 
             $this->registered = true;
+            $this->device->setLastActive(new \DateTime());
 
             $this->device->save();
             $this->device->generateUniqueToken();
@@ -154,6 +157,7 @@ class DeviceApiController extends AbstractController
                 $registerResponse->token=$this->device->getAccessToken();
             }else{
                 $sql = 'SELECT id FROM users WHERE login = \''.$login.'\' AND password = MD5(CONCAT(\''.md5($password).'\',id)) AND mac =\'\' LIMIT 0,1';
+
                 $query = QueryBuilder::query($sql);
                 if($query->num_rows==1){
                     $this->registered=true;
@@ -202,6 +206,7 @@ class DeviceApiController extends AbstractController
      */
     public function userInfoAction(){
         if(!$this->registered) throw new DeviceApiRegistrationRequiredException('Registration required');
+
         $userInfoResponse = new UserInfoResponse(
             $this->device->getFullname(),
             $this->device->getAccount(),
@@ -245,7 +250,7 @@ class DeviceApiController extends AbstractController
     public function epgAction($channelId, $date)
     {
         $date = str_replace(".json","",$date);
-        
+
         /**
          * @var $channel Channel
          */

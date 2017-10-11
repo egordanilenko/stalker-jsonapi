@@ -35,11 +35,13 @@ class VodController extends AbstractController {
     }
 
     public function contentListAction() {
-
+       
         $start = (int)array_key_exists('start',$this->getUrlParam()) ? $this->getUrlParam()['start'] : 0;
         $limit = (int)array_key_exists('limit',$this->getUrlParam()) ? $this->getUrlParam()['limit'] : 10;
         $search = array_key_exists('search',$this->getUrlParam()) ? $this->getUrlParam()['search'] : null;
         $search_tags = array_key_exists('tags',$this->getUrlParam()) ? explode (',', $this->getUrlParam()['tags']) : [];
+
+
 
         $response = new VodContentListResponse(
             $start,
@@ -106,7 +108,7 @@ class VodController extends AbstractController {
 
     private function getTagList() {
         
-        $videos = ORM::for_table("video")->find_many();
+        $videos = ORM::for_table("video")->where('status',1)->find_many();
 
         $tags_ids = array();
 
@@ -150,7 +152,6 @@ class VodController extends AbstractController {
         if((int)$video->cat_genre_id_4 !== 0){
             array_push($tags, (int)$video->cat_genre_id_4);
         }
-
         return $tags;
     }
 

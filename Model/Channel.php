@@ -86,6 +86,12 @@ class Channel extends ActiveRecord
             $server = new DvrServerFlussonic();
             $server->setDefaultTimeShiftDepthSeconds((int)$this->tv_archive_duration*3600);
             return $server;
+        } elseif($this->mc_cmd && (bool)$this->enable_tv_archive) {
+            $server = new DvrServerStalker();
+            $server->setChannelNumber($this->getId());
+
+            $server->setDefaultTimeShiftDepthSeconds((int)$this->tv_archive_duration*3600);
+            return $server;
         }
         return null;
     }

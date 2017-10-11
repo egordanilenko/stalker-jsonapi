@@ -198,7 +198,7 @@ class Device extends ActiveRecord
      */
     public function setLastActive(\DateTime $last_active)
     {
-        $this->last_active = $last_active->format('c');
+        $this->last_active = $last_active->format('Y-m-d H:m:s');
     }
 
     /**
@@ -279,7 +279,7 @@ class Device extends ActiveRecord
             'token'   => $token,
             'refresh_token' => md5($token.''.uniqid()),
             'secret_key'    => md5($token.microtime(1)),
-            'started' => 'NOW()',
+            'started' => date('Y-m-d H:i:s', time()),
             'expires' => date('Y-m-d H:i:s', time() + 3600)
         );
 
