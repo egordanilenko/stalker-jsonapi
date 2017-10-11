@@ -12,7 +12,7 @@ wget https://github.com/egordanilenko/stalker-jsonapi/archive/master.zip
 unzip master.zip
 ```
 
-3) Make symlink to stalker folder near stalker_porta
+3) Make symlink to stalker folder near stalker_portal
  
 ```
 ln -s /%anypath%/stalker-jsonapi-master/tvipapi/ /%stalker_common_directory%/tvipapi
@@ -53,4 +53,10 @@ and redefine config values for
 ```
 stalker_host
 stalker_path
+```
+7) If you use Stalker DVR, you need fix  dumpstream script:
+```
+mv /var/www/stalker_portal/storage/dumpstream /var/www/stalker_portal/storage/dumpstream.backup
+ln -s /var/www/jsonapi/dumpstream.py /var/www/stalker_portal/storage/dumpstream
+
 ```
