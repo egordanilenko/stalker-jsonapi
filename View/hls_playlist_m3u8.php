@@ -7,7 +7,7 @@
 foreach ($segments as $segment) {
     $format = "#EXTINF:%f,\n";
     $format_bytes = "#EXT-X-BYTERANGE:%s@%s\n";
-    printf($format_bytes, ($segment->getEndByte() - $segment->getStartByte()),$segment->getStartByte());
+    printf($format_bytes, ($segment->getEndByte() + 1 - $segment->getStartByte()),$segment->getStartByte());
     printf($format, $segment->getDuration());
     echo $path . $segment->getFileName()."\n";
 }
