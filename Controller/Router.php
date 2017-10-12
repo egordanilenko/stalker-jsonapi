@@ -209,7 +209,7 @@ class Router
      */
     public function isFound()
     {
-        $uri = $this->path;
+        $uri = substr($this->getRequestUri(),strpos($this->getRequestUri(),'/json/'));
 
         // if URI equals to route
         if (isset($this->routes[$uri])) {

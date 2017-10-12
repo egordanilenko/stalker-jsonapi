@@ -1,22 +1,9 @@
 <?php
 namespace Controller;
 
-use Model\AgeGroup;
+use Exception\ErrorException;
 use Model\Request;
-use Model\vod\VodCategory;
-use Model\vod\VodContent;
-use Model\vod\VodContentActor;
-use Model\vod\VodContentFileItem;
-use Model\vod\VodContentItem;
-use Model\vod\VodShortContent;
-use Model\vod\VodTag;
-use Response\RequestResponse;
-use Response\vod\VodContentListResponse;
-use Response\vod\VodContentResponse;
-use Response\vod\VodTagListResponse;
 use Utils\HlsSreamer;
-use Utils\ORM;
-use Utils\PoTranslator;
 
 
 class DVRController {
@@ -36,7 +23,7 @@ class DVRController {
 
         $session_key = "X-Playback-Session-Id";
 
-        if(!isset(getallheaders()[$session_key])) return;
+        if(!isset(getallheaders()[$session_key])) throw new ErrorException("Not found header: X-Playback-Session-Id",500);
 
         if(isset(getallheaders()[$session_key])) session_id(getallheaders()[$session_key]);
 
