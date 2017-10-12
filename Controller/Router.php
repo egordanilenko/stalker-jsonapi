@@ -59,6 +59,8 @@ class Router
 
     private $config;
 
+    private $path;
+
     public function __construct($uri,Request $request, array $config = [])
     {
         $this->request = $request;
@@ -69,7 +71,8 @@ class Router
         $this->requestMethod = $_SERVER['REQUEST_METHOD'];
 
         $this->deviceApiController = new DeviceApiController($request, $config);
-        $path = substr($request->getPath(),strlen('/json/'));
+        $path = substr($request->getPath(),strpos($request->getPath(),'/json/'));
+        $this->path = $path;
         $path=str_replace('.json','',$path);
         $array = explode('/',$path);
         $method = Inflector::camelize(array_shift($array));
@@ -103,14 +106,13 @@ class Router
 
         if ($this->isFound()) {
 
-           //if($this->deviceApiController->isRegistered() == false && in_array($this->getRequestHandler(),$this->deviceApiController->getAnonymousAction())==false) throw  new DeviceApiAuthenticationRequiredException('Need auth');
+           if($this->deviceApiController->isRegistered() == false && in_array($this->getRequestHandler(),$this->deviceApiController->getAnonymousAction())==false) throw  new DeviceApiAuthenticationRequiredException('Need auth');
 
            return $this->executeHandler(
                     $this->getRequestHandler(),
                     $this->getParams()
                 );
         } else {
-
             // Simple "Not found" handler
             $requestResponse = new ErrorResponse(404,'Not found');
             return new JsonResponse($requestResponse,404);
@@ -207,9 +209,7 @@ class Router
      */
     public function isFound()
     {
-        $uri = $this->getRequestUri();
-
-        //var_dump($this);
+        $uri = $this->path;
 
         // if URI equals to route
         if (isset($this->routes[$uri])) {

@@ -122,8 +122,9 @@ try{
     ORM::configure("mysql:host=$dbhost;dbname=".$conf["db_name"]);
     ORM::configure('username', $conf["mysql_user"]);
     ORM::configure('password', $conf["mysql_pass"]);
-    ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'set session sql_mode=\'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION\', NAMES utf8'));
-    //ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8;'));
+    // for new mysql version
+    //ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'set session sql_mode=\'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION\', NAMES utf8'));
+    ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8;'));
 
     //$path = substr($_SERVER['REQUEST_URI'], strlen($_SERVER['BASE']));
     $path = $_SERVER['REQUEST_URI'];
@@ -137,20 +138,20 @@ try{
 
     // Add array of routes.
         $router->add([
-            '/tvipapi/json/auth.json'                    => 'Controller\DeviceApiController@authAction',
-            '/tvipapi/json/register.json'                => 'Controller\DeviceApiController@registerAction',
-            '/tvipapi/json/unregister.json'              => 'Controller\DeviceApiController@unregisterAction',
-            '/tvipapi/json/messages.json'                => 'Controller\DeviceApiController@messagesAction',
-            '/tvipapi/json/user_info.json'               => 'Controller\DeviceApiController@userInfoAction',
-            '/tvipapi/json/server_info.json'             => 'Controller\DeviceApiController@serverInfoAction',
-            '/tvipapi/json/channels.json'                => 'Controller\DeviceApiController@channelsAction',
-            '/tvipapi/json/short_epg/:any.json'          => 'Controller\DeviceApiController@shortEpgAction',
-            '/tvipapi/json/short_epg/:any/epg.json'      => 'Controller\DeviceApiController@channelShortEpgAction',
-            '/tvipapi/json/vod/content_list.json'        => 'Controller\VodController@contentListAction',
-            '/tvipapi/json/vod/content/:any'             => 'Controller\VodController@contentAction',
-            '/tvipapi/json/archive/:num/:num/index.m3u8' => 'Controller\DVRController@timeShiftAction',
-            '/tvipapi/json/vod/tag_list/:any'            => 'Controller\VodController@tagListAction',
-            '/tvipapi/json/epg/:any/:any'                => 'Controller\DeviceApiController@epgAction',
+            '/json/auth.json'                    => 'Controller\DeviceApiController@authAction',
+            '/json/register.json'                => 'Controller\DeviceApiController@registerAction',
+            '/json/unregister.json'              => 'Controller\DeviceApiController@unregisterAction',
+            '/json/messages.json'                => 'Controller\DeviceApiController@messagesAction',
+            '/json/user_info.json'               => 'Controller\DeviceApiController@userInfoAction',
+            '/json/server_info.json'             => 'Controller\DeviceApiController@serverInfoAction',
+            '/json/channels.json'                => 'Controller\DeviceApiController@channelsAction',
+            '/json/short_epg/:any.json'          => 'Controller\DeviceApiController@shortEpgAction',
+            '/json/short_epg/:any/epg.json'      => 'Controller\DeviceApiController@channelShortEpgAction',
+            '/json/vod/content_list.json'        => 'Controller\VodController@contentListAction',
+            '/json/vod/content/:any'             => 'Controller\VodController@contentAction',
+            '/json/archive/:num/:num/index.m3u8' => 'Controller\DVRController@timeShiftAction',
+            '/json/vod/tag_list/:any'            => 'Controller\VodController@tagListAction',
+            '/json/epg/:any/:any'                => 'Controller\DeviceApiController@epgAction',
         ]);
 
     $jsonResponse = $router->getResponse();
