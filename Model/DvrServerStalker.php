@@ -25,7 +25,7 @@ class DvrServerStalker extends DvrServer
 
         return
             'http://'.$_SERVER['SERVER_NAME'].':'.$_SERVER['SERVER_PORT'].
-            '/tvipapi/json/archive/'.$this->channel_number.'/'.
+            $_SERVER['BASE'].'/json/archive/'.$this->channel_number.'/'.
             $this->getVariable('%s').
             '/index.m3u8';
 

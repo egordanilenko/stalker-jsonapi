@@ -123,8 +123,8 @@ try{
     ORM::configure('username', $conf["mysql_user"]);
     ORM::configure('password', $conf["mysql_pass"]);
     // for new mysql version
-    //ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'set session sql_mode=\'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION\', NAMES utf8'));
-    ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8;'));
+    ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'set session sql_mode=\'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION\', NAMES utf8'));
+    //ORM::configure('driver_options', array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8;'));
 
     //$path = substr($_SERVER['REQUEST_URI'], strlen($_SERVER['BASE']));
     $path = $_SERVER['REQUEST_URI'];
