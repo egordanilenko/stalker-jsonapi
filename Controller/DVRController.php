@@ -31,7 +31,13 @@ class DVRController {
 
         $hlsStreamer = new HlsSreamer($channel_id);
 
-        $segments = $hlsStreamer->getSegmentsByTime($time);
+        try {
+            $segments = $hlsStreamer->getSegmentsByTime($time);
+        }catch (\Exception $e){
+            throw new ErrorException($e->getMessage(),404);
+        }
+
+
 
         if(!array_key_exists("time",$_SESSION)) {
             $_SESSION["time"] = time();
