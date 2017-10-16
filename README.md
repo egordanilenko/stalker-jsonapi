@@ -4,39 +4,22 @@ For quick install plugin into stalker:
 
 1) Download package from github:
 ```
-wget https://github.com/egordanilenko/stalker-jsonapi/archive/master.zip
+wget https://github.com/egordanilenko/stalker-jsonapi/raw/master/build/tvip-jsonapi-plugin.tgz
 
 ```
 2) Unzip package to any folder except /var/www
 ```
-unzip master.zip
+tar -xzf tvip-jsonapi-plugin.tgz  
 ```
 
 3) Make symlink to stalker folder near stalker_portal
  
 ```
-ln -s /%anypath%/stalker-jsonapi-master/tvipapi/ /%stalker_common_directory%/tvipapi
+ln -s  /%anypath%/tvip-jsonapi-plugin/tvipapi/ /%stalker_common_directory%/tvipapi
 ```
 4) For custom configuration see paragraph 5 and 6 at next toturial
 
-For deploy this package on your system:
-
-1) Make distribution: 
-```
-tar -zcvf jsonapi.tar.gz  --exclude .git --exclude "*.log" --exclude ".idea" jsonapi/
-```
-
-2) Transfer jsonapi.tar.gz to server where deployed Stalker Middleware, for example via scp
-```
-scp jsonapi.tar.gz yourname@stalker.example.com:/home/yourname
-```
-
-3) Untar your json.tar.gz near stalker main directory
-```
-tar -zxvf jsonapi.tar.gz -C /var/www/
-```
-
-4) Make symlink
+5) Make symlink 
 ```
 ln -s /var/www/jsonapi/tvipapi /var/www/tvipapi
 ```
@@ -57,6 +40,7 @@ stalker_path
 7) If you use Stalker DVR, you need fix  dumpstream script:
 ```
 mv /var/www/stalker_portal/storage/dumpstream /var/www/stalker_portal/storage/dumpstream.backup
-ln -s /var/www/jsonapi/dumpstream.py /var/www/stalker_portal/storage/dumpstream
+ln -s  /%anypath%/tvip-jsonapi-plugin/dumpstream.py /var/www/stalker_portal/storage/dumpstream
 
 ```
+for applyng new dumpstream you need to restart dumpstream
