@@ -18,9 +18,9 @@ tar -xzf tvip-jsonapi-plugin.tgz
 ln -s  /%anypath%/tvip-jsonapi-plugin/tvipapi/ /%stalker_common_directory%/tvipapi
 ```
 
-4) Make symlink 
+4) Make symlink on root path for simple path for stb
 ```
-ln -s /var/www/jsonapi/tvipapi /var/www/tvipapi
+ln -s /%anypath%/tvip-jsonapi-plugin/tvipapi /var/www/tvipapi
 ```
 5)  By default configuration use this variables:
 ```
@@ -42,4 +42,8 @@ mv /var/www/stalker_portal/storage/dumpstream /var/www/stalker_portal/storage/du
 ln -s  /%anypath%/tvip-jsonapi-plugin/dumpstream.py /var/www/stalker_portal/storage/dumpstream
 
 ```
-for applyng new dumpstream you need to restart dumpstream
+for applying new dumpstream you need to restart dumpstream.
+
+For connection from TVIP STB: use  Middleware API and http://<stalker_server>/ or http://<stalker_server>/stalker_portal. 
+
+Device will search /tvipapi path after main URL
