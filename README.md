@@ -17,9 +17,8 @@ tar -xzf tvip-jsonapi-plugin.tgz
 ```
 ln -s  /%anypath%/tvip-jsonapi-plugin/tvipapi/ /%stalker_common_directory%/tvipapi
 ```
-4) For custom configuration see paragraph 5 and 6 at next toturial
 
-5) Make symlink 
+4) Make symlink 
 ```
 ln -s /var/www/jsonapi/tvipapi /var/www/tvipapi
 ```
