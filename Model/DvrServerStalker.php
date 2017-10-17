@@ -23,9 +23,11 @@ class DvrServerStalker extends DvrServer
         $baseUrl=str_replace('index.m3u8','',$baseUrl);
         $baseUrl=trim($baseUrl,'/');
 
+        $uri = substr($_SERVER{'REQUEST_URI'},0,strripos($_SERVER['REQUEST_URI'],'/json/'));
+
         return
             'http://'.$_SERVER['SERVER_NAME'].':'.$_SERVER['SERVER_PORT'].
-            $_SERVER['BASE'].'/json/archive/'.$this->channel_number.'/'.
+            $uri.'/json/archive/'.$this->channel_number.'/'.
             $this->getVariable('%s').
             '/index.m3u8';
 
