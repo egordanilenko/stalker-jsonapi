@@ -10,6 +10,7 @@ namespace Utils;
 
 
 use Exception\ArchiveNotFoundException;
+use Exception\ErrorException;
 use Model\archive\Segment;
 
 class HlsSreamer
@@ -21,12 +22,30 @@ class HlsSreamer
     private $record_dir;
     private $channel_id;
 
+    private $storage;
 
     public function __construct($channel_id)
     {
         include_once('/var/www/stalker_portal/storage/config.php');
         $this->record_dir = RECORDS_DIR."archive/";
         $this->channel_id = $channel_id;
+
+        $storages = ORM::for_table('tv_archive')
+            ->table_alias('archive')
+            ->join('storages', ['archive.storage_name', '=', 'storages.storage_name'])
+            ->where('archive.ch_id',$channel_id)
+            ->find_many();
+
+        if(count($storages) == 0 ){
+            throw new ErrorException("Archive storage not found",500);
+        }
+
+        $this->storage = $storages[rand(0,count($storages) - 1 )];
+
+        if(preg_match("@^http://@i",$this->storage->storage_ip))
+            $this->storage->storage_ip = preg_replace("@(http://)+@i",'http://',$this->storage->storage_ip);
+        else
+            $this->storage->storage_ip = 'http://'.$this->storage->storage_ip;
     }
 
     public function getSegmentsByTime($time, $count = 5) {
@@ -52,11 +71,12 @@ class HlsSreamer
         try {
 
             $file_handle = fopen($this->getIndexFilePathByTime($time), "r");
+            $path = $this->storage->storage_ip. ':' .$this->storage->apache_port. '/archive/';
 
             while (!feof($file_handle)) {
                 $line = explode(",", fgets($file_handle));
 
-                $segment = new Segment($line[0], $line[1], $line[2], $line[3], $line[4]);
+                $segment = new Segment($line[0], $line[1], $line[2], $line[3], $line[4],$path);
                 if ($segment->getStartTime() <= $time && $segment->getEndTime() >= $time) {
                     return $segment;
                 }
@@ -79,11 +99,11 @@ class HlsSreamer
     }
 
     public function getFilePathByTime($time){
-       return $this->record_dir . $this->channel_id . '/'.$this->getFileNameByTime($time);
+       return $this->storage->storage_ip. ':' .$this->storage->apache_port. '/archive/' . $this->channel_id . '/'.$this->getFileNameByTime($time);
     }
 
     public function getIndexFilePathByTime($time){
-        return $this->record_dir . $this->channel_id . '/'.$this->getIndexFileNameByTime($time);
+        return $this->storage->storage_ip. ':' .$this->storage->apache_port. '/archive/' . $this->channel_id . '/'.$this->getIndexFileNameByTime($time);
     }
 
     public function getFileNameByTime($time){

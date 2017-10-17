@@ -1,9 +1,12 @@
 <?php
 namespace Controller;
 
+use Exception\DeviceApiException;
 use Exception\ErrorException;
+use Model\Channel;
 use Model\Request;
 use Utils\HlsSreamer;
+use Utils\ORM;
 
 
 class DVRController {
@@ -38,7 +41,6 @@ class DVRController {
         }
 
 
-
         if(!array_key_exists("time",$_SESSION)) {
             $_SESSION["time"] = time();
             $_SESSION["segment"] =  end($segments);
@@ -54,14 +56,8 @@ class DVRController {
         }
         reset($segments);
 
-        $host = $_SERVER['SERVER_NAME'];
-        $port = $_SERVER['SERVER_PORT'];
-
-        $archive_path = "http://$host:$port/archive/$channel_id/";
-
         return $this->render('hls_playlist_m3u8.php', [
             'segments' => $hlsStreamer->getSegmentsByTime($time),
-            'path' => $archive_path,
             'count' => $count
         ]);
     }

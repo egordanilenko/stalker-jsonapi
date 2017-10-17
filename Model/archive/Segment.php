@@ -9,17 +9,19 @@ class Segment {
     private $start_byte;
     private $end_byte;
     private $duration;
+    private $path;
 
     /**
      * Segment constructor.
      */
-    public function __construct($start_time,$end_time,$start_byte,$end_byte,$duration)
+    public function __construct($start_time,$end_time,$start_byte,$end_byte,$duration,$path)
     {
         $this->start_time = $start_time;
         $this->end_time = $end_time;
         $this->start_byte = $start_byte;
         $this->end_byte = $end_byte;
         $this->duration = $duration;
+        $this->path = $path;
     }
 
     /**
@@ -108,5 +110,10 @@ class Segment {
 
     public function getIndexFileName(){
         return date("Ymd-H",$this->start_time).".idx";
+    }
+
+    public function getPath()
+    {
+        return $this->path;
     }
 }

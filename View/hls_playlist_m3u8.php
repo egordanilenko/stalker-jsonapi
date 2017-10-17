@@ -9,6 +9,6 @@ foreach ($segments as $segment) {
     $format_bytes = "#EXT-X-BYTERANGE:%s@%s\n";
     printf($format_bytes, ($segment->getEndByte() + 1 - $segment->getStartByte()),$segment->getStartByte());
     printf($format, $segment->getDuration());
-    echo $path . $segment->getFileName()."\n";
+    echo $segment->getPath() . $segment->getFileName()."\n";
 }
 ?>
