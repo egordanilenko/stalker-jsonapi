@@ -71,7 +71,7 @@ class HlsSreamer
         try {
 
             $file_handle = fopen($this->getIndexFilePathByTime($time), "r");
-            $path = $this->storage->storage_ip. ':' .$this->storage->apache_port. '/archive/';
+            $path = $this->storage->storage_ip. ':' .$this->storage->apache_port. '/archive/'.$this->channel_id.'/';
 
             while (!feof($file_handle)) {
                 $line = explode(",", fgets($file_handle));
