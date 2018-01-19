@@ -80,13 +80,14 @@ class ChannelType
         $this->url = $channel->getUrl();
         $this->age_group_id = $channel->isCensored() ? 0:null;
 
-
         if($channel->isEnableTvArchive() && $channel->getDvrServer()){
             $this->tshift_proto = $channel->getDvrServer()->getDvrServerType();
-            $this->tshift_base_url = $channel->getDvrServer()->getTimeshiftUrl($channel->getTimeShiftUrl());
+            $this->tshift_base_url = $channel->getDvrServer()->getTimeshiftUrl($channel->_storage, $channel);
             $this->tshift_depth = $channel->getTvArchiveDuration();
             $this->tshift_cas_config_id = null;
+
         }
+
 
 
         $this->media=new MediaType();

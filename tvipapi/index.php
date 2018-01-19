@@ -7,7 +7,7 @@ use Response\ErrorResponse;
 use Response\M3u8Response;
 use Utils\ORM;
 
-set_error_handler('error_handler');
+//set_error_handler('error_handler');
 
 if (!function_exists('http_response_code')) {
     function http_response_code($code = NULL) {

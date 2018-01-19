@@ -4,6 +4,8 @@
 namespace Model;
 
 
+use Utils\DvrServerLoadBalancer;
+
 class Channel extends ActiveRecord
 {
     protected $_table='itv';
@@ -44,6 +46,8 @@ class Channel extends ActiveRecord
      */
     protected $tv_genre_id;
 
+    public $_storage;
+
 
     /**
      * @var bool
@@ -52,6 +56,7 @@ class Channel extends ActiveRecord
 
 
     protected $flussonic_dvr;
+    protected $wowza_dvr;
 
     protected $tv_archive_duration;
 
@@ -86,7 +91,7 @@ class Channel extends ActiveRecord
             $server = new DvrServerFlussonic();
             $server->setDefaultTimeShiftDepthSeconds((int)$this->tv_archive_duration*3600);
             return $server;
-        } elseif($this->mc_cmd && (bool)$this->enable_tv_archive) {
+        } elseif ($this->mc_cmd && (bool)$this->enable_tv_archive  && !(bool) $this->flussonic_dvr && !(bool) $this->wowza_dvr) {
             $server = new DvrServerStalker();
             $server->setChannelNumber($this->getId());
 
@@ -95,6 +100,15 @@ class Channel extends ActiveRecord
         }
         return null;
     }
+
+    public function setStorage($storage) {
+        $this->_storage = $storage;
+    }
+
+    public function getStorage() {
+        $this->_storage;
+    }
+
 
     public function getAspectRatio(){
         return null;

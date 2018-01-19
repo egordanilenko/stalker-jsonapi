@@ -80,5 +80,5 @@ abstract class DvrServer
         throw new \Exception('Unable to find '.$name.' format');
     }
 
-    abstract public function getTimeshiftUrl($string);
+    abstract public function getTimeshiftUrl($storage, Channel $channel);
 }

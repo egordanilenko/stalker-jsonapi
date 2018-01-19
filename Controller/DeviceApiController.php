@@ -31,6 +31,7 @@ use Response\UserInfoResponse;
 use Response\vod\VodTagListResponse;
 use Type\PollType;
 use Type\ShortEpgType;
+use Utils\DvrServerLoadBalancer;
 use Utils\PoTranslator;
 use Utils\QueryBuilder;
 
@@ -398,7 +399,10 @@ class DeviceApiController extends AbstractController
 
         if(count($this->channels)==0 && $this->device->isEnabled()){
             foreach ($this->getChannelsIds() as $id){
-                array_push($this->channels, new Channel($id));
+
+                $dvrServerBalancer  = new DvrServerLoadBalancer(new Channel($id),$this->config);
+                
+                array_push($this->channels, $dvrServerBalancer->getChannel());
             }
         }
         return $this->channels;

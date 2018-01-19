@@ -12,6 +12,7 @@ namespace Utils;
 use Exception\ArchiveNotFoundException;
 use Exception\ErrorException;
 use Model\archive\Segment;
+use Model\Channel;
 
 class HlsSreamer
 {
@@ -21,26 +22,21 @@ class HlsSreamer
 
     private $record_dir;
     private $channel_id;
+    private $channel;
 
     private $storage;
 
-    public function __construct($channel_id)
+    public function __construct($channel_id, $config)
     {
         include_once('/var/www/stalker_portal/storage/config.php');
         $this->record_dir = RECORDS_DIR."archive/";
         $this->channel_id = $channel_id;
 
-        $storages = ORM::for_table('tv_archive')
-            ->table_alias('archive')
-            ->join('storages', ['archive.storage_name', '=', 'storages.storage_name'])
-            ->where('archive.ch_id',$channel_id)
-            ->find_many();
+        $dvrServerBalancer  = new DvrServerLoadBalancer(new Channel($channel_id),$config);
 
-        if(count($storages) == 0 ){
-            throw new ErrorException("Archive storage not found",500);
-        }
+        $this->channel = $dvrServerBalancer->getChannel();
 
-        $this->storage = $storages[rand(0,count($storages) - 1 )];
+        $this->storage = $this->channel->_storage;
 
         if(preg_match("@^http://@i",$this->storage->storage_ip))
             $this->storage->storage_ip = preg_replace("@(http://)+@i",'http://',$this->storage->storage_ip);

@@ -32,7 +32,7 @@ class DVRController {
 
         session_start(['gc_maxlifetime' => 60]);
 
-        $hlsStreamer = new HlsSreamer($channel_id);
+        $hlsStreamer = new HlsSreamer($channel_id, $this->config);
 
         try {
             $segments = $hlsStreamer->getSegmentsByTime($time);

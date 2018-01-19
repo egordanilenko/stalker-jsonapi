@@ -18,20 +18,16 @@ class DvrServerStalker extends DvrServer
 
 
 
-    public function getTimeshiftUrl($baseUrl)
+    public function getTimeshiftUrl($storage, Channel $channel)
     {
-        $baseUrl=str_replace('index.m3u8','',$baseUrl);
-        $baseUrl=trim($baseUrl,'/');
-
-        $uri = substr($_SERVER{'REQUEST_URI'},0,strripos($_SERVER['REQUEST_URI'],'/json/'));
+       $uri = substr($_SERVER{'REQUEST_URI'},0,strripos($_SERVER['REQUEST_URI'],'/json/'));
 
         return
-            'http://'.$_SERVER['SERVER_NAME'].':'.$_SERVER['SERVER_PORT'].
+            'http://'.$storage->storage_ip .":" .$storage->apache_port.
             $uri.'/json/archive/'.$this->channel_number.'/'.
             $this->getVariable('%s').
             '/index.m3u8';
-
-
+        
     }
 
     /**

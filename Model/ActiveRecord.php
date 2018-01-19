@@ -36,7 +36,7 @@ abstract class ActiveRecord
      * @var array ignoring fields for mapping
      */
     private $_internalFields = array(
-        '_table', 'id', '_fieldMapping', '_internalFields'
+        '_table', 'id', '_fieldMapping', '_internalFields','_storage'
     );
 
     /**
