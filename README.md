@@ -60,3 +60,8 @@ mv /var/www/stalker_portal/storage/dumpstream /var/www/stalker_portal/storage/du
 ln -s /var/www/jsonapi/dumpstream.py /var/www/stalker_portal/storage/dumpstream
 
 ```
+8) Run for db migration
+```
+cd /var/www/jsonapi/tvipapi
+php migrate.php update
+```

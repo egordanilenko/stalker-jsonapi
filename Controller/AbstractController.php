@@ -67,6 +67,11 @@ abstract class AbstractController {
 
         $mac = strtoupper($request->getHeaderParam('Mac-Address'));
 
+
+        if(preg_match("/([a-fA-F0-9]{2}[:|\-]?){6}/",$mac,$matches)) {
+            $mac = $matches[0];
+        }
+
         $lang = $this->request->getHeaderParam('Accept-Language');
 
         if($lang){
@@ -95,10 +100,10 @@ abstract class AbstractController {
 
         if($mac){
 
-            $query = QueryBuilder::query("SELECT id FROM users WHERE mac LIKE '$mac' LIMIT 0,1");
+            $query = QueryBuilder::query("SELECT id FROM users WHERE mac = '$mac' LIMIT 0,1");
             $search = $query->fetch_object();
 
-            $id = is_object($search) ? (int)$search->id:null;
+            $id = is_object($search) ? (int)$search->id : null;
             $this->device = new Device($id);
             $this->device->setKeepAlive(new \DateTime());
             $this->device->setLastActive(new \DateTime());
