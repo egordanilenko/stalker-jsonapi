@@ -78,6 +78,7 @@ class HlsSreamer
 
                 $segment = new Segment($line[0], $line[1], $line[2], $line[3], $line[4],$path);
                 if ($segment->getStartTime() <= $time && $segment->getEndTime() >= $time) {
+                    fclose($file_handle);
                     return $segment;
                 }
             }
@@ -86,6 +87,7 @@ class HlsSreamer
         }catch (\Exception $e){
             throw new ArchiveNotFoundException("Archive for timestamp $time not found");
         }
+        throw new ArchiveNotFoundException("Archive for timestamp $time not found");
     }
 
 
