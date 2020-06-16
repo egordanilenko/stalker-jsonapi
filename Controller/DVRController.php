@@ -52,7 +52,7 @@ class DVRController {
             $segmentsr = $hlsStreamer->getSegmentsByTime($time);
             $first_segment = $_SESSION["segment"];
             $current_segmant = end($segmentsr);
-            $count = ($current_segmant->getEndTime() - $first_segment->getEndTime()) / 10;
+            $count = round(($current_segmant->getEndTime() - $first_segment->getEndTime()) / 10); 
         }
         reset($segments);
 
