@@ -7,6 +7,12 @@
 /**
  * @var $segments \Model\archive\Segment[]
  */
+
+if(count($segments)>0){
+    $datetime = new DateTime();
+    $datetime->setTimestamp(intval($segments[0]->getStartTime(),0));
+    echo '#EXT-X-PROGRAM-DATE-TIME:'.$datetime->format('Y-m-d\TH:i:sP').PHP_EOL;
+}
 foreach ($segments as $segment) {
     $format = "#EXTINF:%f,\n";
     $format_bytes = "#EXT-X-BYTERANGE:%s@%s\n";
