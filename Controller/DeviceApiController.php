@@ -81,7 +81,7 @@ class DeviceApiController extends AbstractController
             '', // Stalker not provide ISP name
             time(), //server time
             true, //auth enabled
-            60,//channel list update interval $this->coreService->getConfig()->get('channel_list_update_interval'),
+            60*60*3,//channel list update interval $this->coreService->getConfig()->get('channel_list_update_interval'),
             $this->clientIp,
             $this->getPoll(),
             array() //cas types
