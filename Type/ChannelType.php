@@ -51,6 +51,11 @@ class ChannelType
     public $tshift_depth = null;
 
     /**
+     * @var int
+     */
+    public $tshift_delay = 30;
+
+    /**
      * @var string
      */
     public $tshift_base_url = null;
